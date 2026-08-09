@@ -68,6 +68,7 @@ function carregarProdutos(filtro = ""){
     "Petiscos":"🍟",
     "Bebidas":"🥤",
     "Cafeteria":"☕"
+    "Cervejas e Vinhos":"🍺"
 };
 
 titulo.innerHTML = `
