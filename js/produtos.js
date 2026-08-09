@@ -398,4 +398,260 @@ const produtos = [
         imagem: "img/canja.webp"
     }
 
+// ==========================
+// BEBIDAS
+// ==========================
+
+{
+    id: 55,
+    nome: "Água Minaura sem gás",
+    categoria: "Bebidas",
+    preco: 3.00,
+    imagem: "img/agua-minaura-sem-gas.webp"
+},
+
+{
+    id: 56,
+    nome: "Água Minaura com gás",
+    categoria: "Bebidas",
+    preco: 4.50,
+    imagem: "img/agua-minaura-com-gas.webp"
+},
+
+{
+    id: 57,
+    nome: "Água Crystal sem gás",
+    categoria: "Bebidas",
+    preco: 4.00,
+    imagem: "img/agua-crystal-sem-gas.webp"
+},
+
+{
+    id: 58,
+    nome: "Água Minalice sem gás",
+    categoria: "Bebidas",
+    preco: 3.00,
+    imagem: "img/agua-minalice-sem-gas.webp"
+},
+
+{
+    id: 59,
+    nome: "Água Minalice com gás",
+    categoria: "Bebidas",
+    preco: 4.50,
+    imagem: "img/agua-minalice-com-gas.webp"
+},
+
+{
+    id: 60,
+    nome: "Suco Nativo Frutas Cítricas",
+    categoria: "Bebidas",
+    preco: 4.00,
+    imagem: "img/suco-nativo-frutas-citricas.webp"
+},
+
+{
+    id: 61,
+    nome: "Suco Nativo Uva",
+    categoria: "Bebidas",
+    preco: 4.00,
+    imagem: "img/suco-nativo-uva.webp"
+},
+
+{
+    id: 62,
+    nome: "Suco Nativo Laranja com Acerola",
+    categoria: "Bebidas",
+    preco: 4.00,
+    imagem: "img/suco-nativo-laranja-acerola.webp"
+},
+
+{
+    id: 63,
+    nome: "Guaraná Antarctica lata 350ml",
+    categoria: "Bebidas",
+    preco: 7.00,
+    imagem: "img/guarana-antartica-lata.webp"
+},
+
+{
+    id: 64,
+    nome: "Guaraná Antarctica Zero lata 350ml",
+    categoria: "Bebidas",
+    preco: 7.00,
+    imagem: "img/guarana-antartica-zero-lata.webp"
+},
+
+{
+    id: 65,
+    nome: "Guaraná Antarctica caçulinha 220ml",
+    categoria: "Bebidas",
+    preco: 5.00,
+    imagem: "img/guarana-antartica-caculinha.webp"
+},
+
+{
+    id: 66,
+    nome: "Guaraná Antarctica Zero caçulinha 220ml",
+    categoria: "Bebidas",
+    preco: 5.00,
+    imagem: "img/guarana-antartica-zero-caculinha.webp"
+},
+
+{
+    id: 67,
+    nome: "Coca-Cola lata 350ml",
+    categoria: "Bebidas",
+    preco: 7.00,
+    imagem: "img/coca-cola-lata.webp"
+},
+
+{
+    id: 68,
+    nome: "Coca-Cola Zero lata 350ml",
+    categoria: "Bebidas",
+    preco: 7.00,
+    imagem: "img/coca-cola-zero-lata.webp"
+},
+
+{
+    id: 69,
+    nome: "Coca-Cola caçulinha 220ml",
+    categoria: "Bebidas",
+    preco: 5.00,
+    imagem: "img/coca-cola-caculinha.webp"
+},
+
+{
+    id: 70,
+    nome: "Coca-Cola Zero caçulinha 220ml",
+    categoria: "Bebidas",
+    preco: 5.00,
+    imagem: "img/coca-cola-zero-caculinha.webp"
+},
+
+{
+    id: 71,
+    nome: "Energético Monster Mango Loco 473ml",
+    categoria: "Bebidas",
+    preco: 13.00,
+    imagem: "img/monster-mango-loco.webp"
+},
+
+{
+    id: 72,
+    nome: "Energético Monster Tradicional 473ml",
+    categoria: "Bebidas",
+    preco: 13.00,
+    imagem: "img/monster-tradicional.webp"
+},
+
+{
+    id: 73,
+    nome: "Fanta Laranja lata 350ml",
+    categoria: "Bebidas",
+    preco: 7.00,
+    imagem: "img/fanta-laranja.webp"
+},
+
+{
+    id: 74,
+    nome: "Fanta Uva lata 350ml",
+    categoria: "Bebidas",
+    preco: 7.00,
+    imagem: "img/fanta-uva.webp"
+},
+
+{
+    id: 75,
+    nome: "Schweppes Citrus lata 350ml",
+    categoria: "Bebidas",
+    preco: 7.00,
+    imagem: "img/schweppes-citrus.webp"
+},
+
+{
+    id: 76,
+    nome: "Schweppes Tônica lata 350ml",
+    categoria: "Bebidas",
+    preco: 7.00,
+    imagem: "img/schweppes-tonica.webp"
+},
+
+{
+    id: 77,
+    nome: "Schweppes Tônica Zero lata 350ml",
+    categoria: "Bebidas",
+    preco: 7.00,
+    imagem: "img/schweppes-tonica-zero.webp"
+},
+
+{
+    id: 78,
+    nome: "Soda Limonada lata 350ml",
+    categoria: "Bebidas",
+    preco: 7.00,
+    imagem: "img/soda-limonada.webp"
+},
+
+{
+    id: 79,
+    nome: "Sprite lata 350ml",
+    categoria: "Bebidas",
+    preco: 7.00,
+    imagem: "img/sprite-lata.webp"
+},
+
+
+// ==========================
+// CERVEJAS E VINHOS
+// ==========================
+
+{
+    id: 80,
+    nome: "Heineken 600ml",
+    categoria: "Cervejas e Vinhos",
+    preco: 18.00,
+    imagem: "img/heineken-600ml.webp"
+},
+
+{
+    id: 81,
+    nome: "Amstel 600ml",
+    categoria: "Cervejas e Vinhos",
+    preco: 16.00,
+    imagem: "img/amstel-600ml.webp"
+},
+
+{
+    id: 82,
+    nome: "Original 600ml",
+    categoria: "Cervejas e Vinhos",
+    preco: 16.00,
+    imagem: "img/original-600ml.webp"
+},
+
+{
+    id: 83,
+    nome: "Vinho Lunae garrafa",
+    categoria: "Cervejas e Vinhos",
+    preco: 55.00,
+    imagem: "img/vinho-lunae.webp"
+},
+
+{
+    id: 84,
+    nome: "Heineken lata",
+    categoria: "Cervejas e Vinhos",
+    preco: 10.00,
+    imagem: "img/heineken-lata.webp"
+},
+
+{
+    id: 85,
+    nome: "Amstel lata",
+    categoria: "Cervejas e Vinhos",
+    preco: 10.00,
+    imagem: "img/amstel-lata.webp"
+}
 ];
