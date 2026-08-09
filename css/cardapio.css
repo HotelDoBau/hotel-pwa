@@ -344,3 +344,13 @@ body {
     border-radius:18px 18px 0 0;
 
 }
+.observacao-produto {
+    font-size: 13px;
+    color: #b36b00;
+    background: #fff4d6;
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin: 8px 0 12px;
+    text-align: center;
+    font-weight: 500;
+}
