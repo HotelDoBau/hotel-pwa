@@ -31,16 +31,36 @@ const produtos = [
     // SALGADOS
     // ==========================
 
-    { id: 19, nome: "Tortinha de Costela", categoria: "Salgados", preco: 7.50, imagem: "img/tortinha-costela.webp" },
-    { id: 20, nome: "Esfiha de Carne", categoria: "Salgados", preco: 7.50, imagem: "img/esfiha-carne.webp" },
-    { id: 21, nome: "Esfiha de Frango", categoria: "Salgados", preco: 7.50, imagem: "img/esfiha-frango.webp" },
-    { id: 22, nome: "Ghirella de Pizza", categoria: "Salgados", preco: 7.50, imagem: "img/ghirella-pizza.webp" },
-    { id: 23, nome: "Presunto e Queijo", categoria: "Salgados", preco: 7.50, imagem: "img/presunto-queijo.webp" },
-    { id: 24, nome: "X-Burguer com Bacon", categoria: "Salgados", preco: 10.00, imagem: "img/x-burguer-bacon.webp" },
-    { id: 25, nome: "Croissant Pizza", categoria: "Salgados", preco: 7.50, imagem: "img/croissant-pizza.webp" },
-    { id: 26, nome: "Croissant Frango com Requeijão", categoria: "Salgados", preco: 7.50, imagem: "img/croissant-frango.webp" },
-    { id: 27, nome: "Croissant Chocolate", categoria: "Salgados", preco: 7.50, imagem: "img/croissant-chocolate.webp" },
-    { id: 28, nome: "Croissant Doce de Leite", categoria: "Salgados", preco: 7.50, imagem: "img/croissant-doce-leite.webp" },
+   // ==========================
+// SALGADOS
+// ==========================
+
+{
+    id: 19,
+    nome: "Salgados Tradicionais",
+    categoria: "Salgados",
+    preco: 7.50,
+    imagem: "img/salgados-tradicionais.webp",
+    observacao: "Verificar disponibilidade"
+},
+
+{
+    id: 20,
+    nome: "Tortinha de Costela",
+    categoria: "Salgados",
+    preco: 8.00,
+    imagem: "img/tortinha-costela.webp",
+    observacao: "Verificar disponibilidade"
+},
+
+{
+    id: 21,
+    nome: "Hamburgão Duplo",
+    categoria: "Salgados",
+    preco: 10.00,
+    imagem: "img/hamburgao-duplo.webp",
+    observacao: "Verificar disponibilidade"
+},
 
 
     // ==========================
