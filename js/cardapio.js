@@ -9,78 +9,17 @@ const busca = document.getElementById("buscar");
 
 
 // ===========================
-// IMAGENS DAS CATEGORIAS
-// ===========================
-
-const imagensCategoria = {
-    "Salgados": "img/salgados.webp",
-    "Lanches": "img/lanche.webp",
-    "Pratos feitos": "img/pf.webp",
-    "Doces": "img/sobremesas.webp",
-    "Petiscos": "img/petiscos.webp"
-
-};
-
-
-// ===========================
 // ESCOLHE IMAGEM DO PRODUTO
 // ===========================
 
 function obterImagem(produto){
 
-    console.log("Categoria:", produto.categoria);
-    console.log("Produto:", produto.nome);
-
-    const nome = produto.nome.toLowerCase();
-
-
-    if(produto.categoria === "Cafeteria"){
-
-        if(
-            nome.includes("cappuccino") ||
-            nome.includes("frapp") ||
-            nome.includes("affogato")
-        ){
-            return "img/cappuccino-espresso.webp";
-        }
-
-        return "img/cafe-espresso.webp";
+    if(produto.imagem){
+        return produto.imagem;
     }
 
-
-    if(produto.categoria === "Bebidas"){
-
-        if(
-            nome.includes("água") ||
-            nome.includes("agua")
-        ){
-            return "img/aguas.webp";
-        }
-
-
-        if(nome.includes("vinho")){
-            return "img/cervejas.webp";
-        }
-
-
-        return "img/refrigerantes.webp";
-    }
-
-
-    if(produto.categoria === "Pratos Feitos"){
-        return "img/pf.webp";
-    }
-
-
-    if(produto.categoria === "Lanches"){
-        return "img/lanche.webp";
-    }
-
-
-    return imagensCategoria[produto.categoria] || "";
-
+    return "";
 }
-
 
 // ===========================
 // CARREGAR PRODUTOS
@@ -101,16 +40,17 @@ function carregarProdutos(filtro = ""){
     categorias.forEach(categoria => {
 
 
-        const itens = produtos.filter(produto =>
+       const itens = produtos.filter(produto =>
 
-            produto.categoria === categoria &&
+    produto.categoria === categoria &&
 
-            produto.nome
-            .toLowerCase()
-            .includes(filtro.toLowerCase())
+    produto.ativo !== false &&
 
-        );
+    produto.nome
+    .toLowerCase()
+    .includes(filtro.toLowerCase())
 
+);
 
         if(itens.length === 0) return;
 
