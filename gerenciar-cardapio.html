@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Gerenciar Cardápio - Hotel do Baú</title>
+
+<link rel="stylesheet" href="css/beneficios.css">
+<link rel="stylesheet" href="css/responsivo.css">
+
+<style>
+
+.gerenciador-container{
+    max-width:900px;
+    margin:30px auto;
+    padding:0 20px 40px;
+}
+
+.grupo-gerencia{
+    margin-bottom:35px;
+}
+
+.grupo-gerencia h2{
+    color:#245d88;
+    margin-bottom:15px;
+}
+
+.item-gerencia{
+    background:white;
+    border-radius:14px;
+    padding:15px 18px;
+    margin-bottom:12px;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+}
+
+.info-produto{
+    display:flex;
+    flex-direction:column;
+}
+
+.info-produto strong{
+    font-size:16px;
+}
+
+.info-produto small{
+    color:#777;
+    margin-top:4px;
+}
+
+.botao-status{
+    border:none;
+    border-radius:12px;
+    padding:10px 16px;
+    cursor:pointer;
+    font-weight:bold;
+    min-width:110px;
+}
+
+.ativo{
+    background:#25D366;
+    color:white;
+}
+
+.inativo{
+    background:#d9534f;
+    color:white;
+}
+
+.aviso{
+    text-align:center;
+    padding:25px;
+    color:#666;
+}
+
+@media(max-width:600px){
+
+    .item-gerencia{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .botao-status{
+        width:100%;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<header class="topo">
+
+<button onclick="history.back()" class="voltar">
+← Voltar
+</button>
+
+<div class="titulo-topo">
+
+<h1>🍽️ Gerenciar Cardápio</h1>
+
+<p>
+Ative ou desative produtos disponíveis para os hóspedes.
+</p>
+
+</div>
+
+</header>
+
+
+<main class="gerenciador-container">
+
+<div id="lista-gerenciamento">
+
+<p class="aviso">
+Carregando produtos...
+</p>
+
+</div>
+
+</main>
+
+
+<script src="dados/produtos.js"></script>
+
+<script type="module" src="js/firebase.js"></script>
+
+
+<script>
+
+let statusProdutos = {};
+
+
+// ==========================================
+// ESPERA FIREBASE CARREGAR
+// ==========================================
+
+function esperarFirebase(){
+
+    if(
+        !window.firebasePronto ||
+        !window.firebaseHotel
+    ){
+
+        setTimeout(esperarFirebase, 200);
+        return;
+
+    }
+
+    iniciarGerenciador();
+
+}
+
+
+// ==========================================
+// INICIAR
+// ==========================================
+
+function iniciarGerenciador(){
+
+    const {
+        db,
+        collection,
+        onSnapshot
+    } = window.firebaseHotel;
+
+
+    onSnapshot(
+        collection(db, "produtos_status"),
+        snapshot => {
+
+            statusProdutos = {};
+
+            snapshot.forEach(documento => {
+
+                statusProdutos[documento.id] =
+                    documento.data().ativo;
+
+            });
+
+
+            montarLista();
+
+        }
+    );
+
+}
+
+
+// ==========================================
+// MONTAR LISTA
+// ==========================================
+
+function montarLista(){
+
+    const lista =
+        document.getElementById("lista-gerenciamento");
+
+
+    lista.innerHTML = "";
+
+
+    const categorias = [
+        ...new Set(
+            produtos.map(
+                produto => produto.categoria
+            )
+        )
+    ];
+
+
+    categorias.forEach(categoria => {
+
+        const grupo =
+            document.createElement("section");
+
+
+        grupo.className =
+            "grupo-gerencia";
+
+
+        const titulo =
+            document.createElement("h2");
+
+
+        titulo.textContent =
+            categoria;
+
+
+        grupo.appendChild(titulo);
+
+
+        const itens =
+            produtos.filter(
+                produto =>
+                produto.categoria === categoria
+            );
+
+
+        itens.forEach(produto => {
+
+            const ativo =
+                statusProdutos[String(produto.id)] !== false;
+
+
+            const item =
+                document.createElement("div");
+
+
+            item.className =
+                "item-gerencia";
+
+
+            item.innerHTML = `
+
+                <div class="info-produto">
+
+                    <strong>
+                        ${produto.nome}
+                    </strong>
+
+                    <small>
+                        R$ ${Number(produto.preco).toFixed(2)}
+                    </small>
+
+                </div>
+
+
+                <button
+                    class="botao-status ${ativo ? "ativo" : "inativo"}"
+                    onclick="alterarStatus(${produto.id}, ${ativo})">
+
+                    ${ativo ? "🟢 ATIVO" : "🔴 INATIVO"}
+
+                </button>
+
+            `;
+
+
+            grupo.appendChild(item);
+
+        });
+
+
+        lista.appendChild(grupo);
+
+    });
+
+}
+
+
+// ==========================================
+// ALTERAR STATUS
+// ==========================================
+
+async function alterarStatus(id, ativoAtual){
+
+    const {
+        db,
+        doc,
+        setDoc
+    } = window.firebaseHotel;
+
+
+    try{
+
+        await setDoc(
+
+            doc(
+                db,
+                "produtos_status",
+                String(id)
+            ),
+
+            {
+                ativo: !ativoAtual
+            },
+
+            {
+                merge:true
+            }
+
+        );
+
+    }catch(erro){
+
+        console.error(erro);
+
+        alert(
+            "Não foi possível alterar o produto."
+        );
+
+    }
+
+}
+
+
+window.alterarStatus =
+    alterarStatus;
+
+
+esperarFirebase();
+
+</script>
+
+
+</body>
+
+</html>
