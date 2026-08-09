@@ -396,7 +396,7 @@ const produtos = [
         categoria: "Pratos Feitos",
         preco: 19.90,
         imagem: "img/canja.webp"
-    }
+    },
 
 // ==========================
 // BEBIDAS
@@ -654,4 +654,5 @@ const produtos = [
     preco: 10.00,
     imagem: "img/amstel-lata.webp"
 }
+
 ];
