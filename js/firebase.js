@@ -10,7 +10,9 @@ import {
     onSnapshot,
     query,
     orderBy,
-    serverTimestamp
+    serverTimestamp,
+    setDoc,
+    updateDoc
 }
 from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
@@ -33,11 +35,11 @@ const firebaseConfig = {
 
 
 const app =
-    initializeApp(firebaseConfig);
+initializeApp(firebaseConfig);
 
 
 const db =
-    getFirestore(app);
+getFirestore(app);
 
 
 window.firebaseHotel = {
@@ -50,9 +52,13 @@ window.firebaseHotel = {
     onSnapshot,
     query,
     orderBy,
-    serverTimestamp
+    serverTimestamp,
+    setDoc,
+    updateDoc
 
 };
+
+
 console.log("✅ Firebase Hotel carregado com sucesso");
 
 window.firebasePronto = true;
