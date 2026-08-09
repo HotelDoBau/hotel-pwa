@@ -354,3 +354,186 @@ body {
     text-align: center;
     font-weight: 500;
 }
+/* =========================
+   CATEGORIAS DO CARDÁPIO
+========================= */
+
+.titulo-categorias{
+    text-align:center;
+    margin:30px auto 25px;
+    padding:0 20px;
+}
+
+.titulo-categorias h2{
+    margin-bottom:5px;
+    color:#245d88;
+}
+
+.titulo-categorias p{
+    color:#777;
+    margin-top:0;
+}
+
+
+.grade-categorias{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+
+    max-width:1100px;
+    margin:0 auto;
+    padding:0 20px 40px;
+}
+
+
+.card-categoria{
+    background:#fff;
+
+    border:none;
+    border-radius:18px;
+
+    padding:30px 20px;
+
+    min-height:170px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    gap:8px;
+
+    cursor:pointer;
+
+    box-shadow:
+        0 8px 22px rgba(0,0,0,.10);
+
+    transition:.25s;
+}
+
+
+.card-categoria:hover{
+    transform:translateY(-5px);
+
+    box-shadow:
+        0 12px 28px rgba(0,0,0,.15);
+}
+
+
+.icone-categoria{
+    font-size:42px;
+}
+
+
+.card-categoria strong{
+    font-size:20px;
+    color:#245d88;
+}
+
+
+.card-categoria small{
+    color:#777;
+    font-size:13px;
+}
+
+
+/* =========================
+   CABEÇALHO DA CATEGORIA
+========================= */
+
+.cabecalho-categoria{
+    max-width:1200px;
+    margin:25px auto 15px;
+    padding:0 20px;
+}
+
+
+.cabecalho-categoria h2{
+    text-align:center;
+    color:#245d88;
+}
+
+
+.voltar-categorias{
+    border:none;
+
+    background:#245d88;
+    color:white;
+
+    padding:10px 16px;
+
+    border-radius:12px;
+
+    font-weight:600;
+
+    cursor:pointer;
+}
+
+
+/* =========================
+   PREÇO
+========================= */
+
+.preco-produto{
+    font-size:18px;
+    font-weight:bold;
+    color:#245d88;
+}
+
+
+/* =========================
+   OBSERVAÇÃO
+========================= */
+
+.observacao-produto{
+    font-size:13px;
+
+    color:#a86200;
+
+    background:#fff4d6;
+
+    padding:8px 10px;
+
+    border-radius:8px;
+
+    text-align:center;
+
+    font-weight:500;
+}
+
+
+/* =========================
+   RESPONSIVO
+========================= */
+
+@media(max-width:800px){
+
+    .grade-categorias{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+}
+
+
+@media(max-width:500px){
+
+    .grade-categorias{
+        grid-template-columns:repeat(2,1fr);
+        gap:12px;
+        padding:0 12px 30px;
+    }
+
+    .card-categoria{
+        min-height:135px;
+        padding:20px 10px;
+    }
+
+    .icone-categoria{
+        font-size:34px;
+    }
+
+    .card-categoria strong{
+        font-size:16px;
+    }
+
+}
