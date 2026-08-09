@@ -135,12 +135,23 @@ ${icones[categoria] || "🍽️"} ${categoria}
 
 
 
-                <h3>${produto.nome}</h3>
+               <h3>${produto.nome}</h3>
 
+<p>
+    R$ ${produto.preco.toFixed(2)}
+</p>
 
-                <p>
-                    R$ ${produto.preco.toFixed(2)}
-                </p>
+${
+    produto.observacao
+    ?
+    `<p class="observacao-produto">
+        ⚠️ ${produto.observacao}
+    </p>`
+    :
+    ""
+}
+
+<div class="controle">
 
 
 
