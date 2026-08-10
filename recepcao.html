@@ -3,13 +3,13 @@
 
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Recepção - Hotel do Baú</title>
+    <title>Recepção - Hotel do Baú</title>
 
-<link rel="stylesheet" href="css/beneficios.css">
-<link rel="stylesheet" href="css/responsivo.css">
+    <link rel="stylesheet" href="css/recepcao.css">
+    <link rel="stylesheet" href="css/responsivo.css">
 
 </head>
 
@@ -37,97 +37,125 @@
 
 
 
-<main class="cardapio-container">
+<main class="recepcao-container">
 
 
-<!-- ATENDIMENTO -->
+    <!-- ATENDIMENTO -->
 
-<div class="card">
+    <div class="card">
 
-    <h2>🛎️ Atendimento</h2>
+        <div class="icone">
+            🛎️
+        </div>
 
-    <p>
-        Nossa equipe está pronta para atender
-        suas solicitações durante sua hospedagem.
-    </p>
+        <h2>Atendimento</h2>
 
-</div>
+        <p>
+            Nossa equipe está pronta para atender
+            suas solicitações durante sua hospedagem.
+        </p>
 
-
-
-<!-- CONTATO -->
-
-<div class="card">
-
-    <h2>📞 Contato</h2>
-
-    <p>
-        Entre em contato com a recepção para
-        dúvidas, informações ou pedidos.
-    </p>
-
-</div>
+    </div>
 
 
 
-<!-- HORÁRIO -->
+    <!-- CONTATO -->
 
-<div class="card">
+    <div class="card">
 
-    <h2>🕒 Horário de atendimento</h2>
+        <div class="icone">
+            📞
+        </div>
 
-    <p>
-        Atendimento disponível para proporcionar
-        uma melhor experiência aos hóspedes.
-    </p>
+        <h2>Contato</h2>
 
-</div>
+        <p>
+            Entre em contato com a recepção para
+            dúvidas, informações ou pedidos.
+        </p>
 
+        <a href="tel:+5516991180878"
+           class="botao telefone">
 
+            📞 Ligar para a recepção
 
-<!-- WHATSAPP -->
+        </a>
 
-<div class="card">
-
-    <h2>💬 WhatsApp</h2>
-
-    <p>
-        Fale diretamente com a recepção
-        pelo WhatsApp.
-    </p>
-
-    <br>
-
-    <a href="https://wa.me/5516991180878?text=Olá,%20gostaria%20de%20falar%20com%20a%20recepção%20do%20Hotel%20do%20Baú"
-       target="_blank">
-
-        📱 Chamar no WhatsApp
-
-    </a>
-
-</div>
+    </div>
 
 
 
-<!-- ÁREA RESTRITA -->
+    <!-- HORÁRIO -->
 
-<div class="card">
+    <div class="card">
 
-    <h2>🔐 Área da Recepção</h2>
+        <div class="icone">
+            🕒
+        </div>
 
-    <p>
-        Acesso exclusivo para visualizar e imprimir comandas.
-    </p>
+        <h2>Horário de atendimento</h2>
 
-    <br>
+        <p>
+            Atendimento disponível para proporcionar
+            uma melhor experiência aos hóspedes.
+        </p>
 
-    <button onclick="acessarPedidos()">
+    </div>
 
-        🖨️ Acessar Pedidos
 
-    </button>
 
-</div>
+    <!-- WHATSAPP -->
+
+    <div class="card">
+
+        <div class="icone">
+            💬
+        </div>
+
+        <h2>WhatsApp</h2>
+
+        <p>
+            Fale diretamente com a recepção
+            pelo WhatsApp.
+        </p>
+
+        <a
+            href="https://wa.me/5516991180878?text=Olá,%20gostaria%20de%20falar%20com%20a%20recepção%20do%20Hotel%20do%20Baú"
+            target="_blank"
+            class="botao whatsapp">
+
+            📱 Chamar no WhatsApp
+
+        </a>
+
+    </div>
+
+
+
+    <!-- ÁREA RESTRITA -->
+
+    <div class="card area-restrita">
+
+        <div class="icone">
+            🔐
+        </div>
+
+        <h2>Área da Recepção</h2>
+
+        <p>
+            Acesso exclusivo para visualizar
+            e imprimir comandas.
+        </p>
+
+        <button
+            onclick="acessarPedidos()"
+            class="botao pedidos">
+
+            🖨️ Acessar Pedidos
+
+        </button>
+
+    </div>
 
 
 </main>
@@ -135,6 +163,10 @@
 
 
 <footer>
+
+    <p>
+        Hotel do Baú
+    </p>
 
     <a href="index.html">
         ⬅ Voltar ao início
@@ -148,13 +180,16 @@
 
 function acessarPedidos() {
 
-    const senha = prompt("🔐 Digite a senha da recepção:");
+    const senha =
+        prompt("🔐 Digite a senha da recepção:");
 
     if (senha === "hotel2026") {
 
         window.location.href = "pedidos.html";
 
-    } else if (senha !== null) {
+    }
+
+    else if (senha !== null) {
 
         alert("❌ Senha incorreta.");
 
