@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Central de Pedidos - Hotel do Baú</title>
+
+<link rel="stylesheet" href="css/pedidos.css">
+
+<style>
+
+/* =========================
+   CENTRAL DE PEDIDOS
+========================= */
+
+.status-central {
+    max-width: 700px;
+    margin: 20px auto;
+    padding: 15px 20px;
+
+    background: white;
+    border-radius: 15px;
+
+    box-shadow: 0 4px 15px rgba(0,0,0,.08);
+
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+
+    flex-wrap: wrap;
+}
+
+.tipo-pedido {
+    display: inline-block;
+
+    padding: 6px 12px;
+    border-radius: 20px;
+
+    font-size: 13px;
+    font-weight: bold;
+
+    margin-bottom: 10px;
+}
+
+.tipo-hospede {
+    background: #e8f4ff;
+    color: #245d88;
+}
+
+.tipo-garcom {
+    background: #fff3d6;
+    color: #8b6b00;
+}
+
+.identificacao {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 8px 0;
+}
+
+.pedido-card {
+    background: white;
+
+    padding: 22px;
+    margin-bottom: 20px;
+
+    border-radius: 18px;
+
+    box-shadow: 0 6px 18px rgba(0,0,0,.10);
+}
+
+.acoes-central {
+    display: flex;
+    gap: 10px;
+
+    margin-top: 18px;
+
+    flex-wrap: wrap;
+}
+
+.botao-finalizar {
+    border: none;
+
+    padding: 14px 18px;
+
+    border-radius: 12px;
+
+    font-size: 16px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    background: #eee;
+}
+
+@media (max-width: 600px) {
+
+    .acoes-central {
+        flex-direction: column;
+    }
+
+    .acoes-central button {
+        width: 100%;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<header class="topo">
+
+    <button
+        onclick="history.back()"
+        class="voltar">
+
+        ← Voltar
+
+    </button>
+
+
+    <div class="titulo">
+
+        <h1>🧾 Central de Pedidos</h1>
+
+        <p>
+            Hóspedes e garçons
+        </p>
+
+    </div>
+
+</header>
+
+
+<div class="status-central">
+
+    <span id="status-hospedes">
+        🟡 Hóspedes conectando...
+    </span>
+
+    <span id="status-garcom">
+        🟡 Garçons conectando...
+    </span>
+
+    <strong id="contador">
+        0 pedidos pendentes
+    </strong>
+
+</div>
+
+
+<main class="container">
+
+    <section id="lista-pedidos">
+
+        <div class="sem-pedido">
+
+            <h2>⏳ Carregando...</h2>
+
+            <p>
+                Buscando pedidos dos dois sistemas.
+            </p>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script type="module">
+
+
+// ======================================================
+// FIREBASE
+// ======================================================
+
+import {
+    initializeApp
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+
+import {
+    getFirestore,
+    collection,
+    onSnapshot,
+    deleteDoc,
+    doc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+
+// ======================================================
+// FIREBASE ANTIGO - HOTEL PWA
+// ======================================================
+
+const firebaseConfigHospedes = {
+
+    apiKey:
+        "AIzaSyBFh1CIN7upch4eXlglUaC_F9rvhpD87gg",
+
+    authDomain:
+        "hotel-do-bau.firebaseapp.com",
+
+    projectId:
+        "hotel-do-bau",
+
+    storageBucket:
+        "hotel-do-bau.firebasestorage.app",
+
+    messagingSenderId:
+        "139452222353",
+
+    appId:
+        "1:139452222353:web:28c69b7a802ec4aa4c2830"
+
+};
+
+
+
+// ======================================================
+// FIREBASE NOVO - HOTEL GARCOM
+// ======================================================
+
+const firebaseConfigGarcom = {
+
+    apiKey:
+        "AIzaSyDaj28MSSHMKfsofE27DfKcsdCD2MUngGA",
+
+    authDomain:
+        "hotel-garcom.firebaseapp.com",
+
+    projectId:
+        "hotel-garcom",
+
+    storageBucket:
+        "hotel-garcom.firebasestorage.app",
+
+    messagingSenderId:
+        "357749341622",
+
+    appId:
+        "1:357749341622:web:b5ff6267d5be911d681517"
+
+};
+
+
+
+// ======================================================
+// INICIAR OS DOIS FIREBASE
+// ======================================================
+
+const appHospedes =
+    initializeApp(
+        firebaseConfigHospedes,
+        "hotelHospedes"
+    );
+
+
+const appGarcom =
+    initializeApp(
+        firebaseConfigGarcom,
+        "hotelGarcom"
+    );
+
+
+const dbHospedes =
+    getFirestore(appHospedes);
+
+
+const dbGarcom =
+    getFirestore(appGarcom);
+
+
+
+// ======================================================
+// LISTAS
+// ======================================================
+
+let pedidosHospedes = [];
+let pedidosGarcom = [];
+
+
+
+// ======================================================
+// DINHEIRO
+// ======================================================
+
+function dinheiro(valor) {
+
+    return Number(valor || 0)
+        .toLocaleString(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        );
+
+}
+
+
+
+// ======================================================
+// ESCAPAR HTML
+// ======================================================
+
+function escaparHTML(texto) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        texto ?? "";
+
+    return div.innerHTML;
+
+}
+
+
+
+// ======================================================
+// DATA PARA ORDENAÇÃO
+// ======================================================
+
+function obterTempo(pedido) {
+
+    if (
+        pedido.criadoEm &&
+        pedido.criadoEm.seconds
+    ) {
+
+        return pedido.criadoEm.seconds;
+
+    }
+
+
+    if (pedido.dataHora) {
+
+        const data =
+            new Date(pedido.dataHora);
+
+        if (!isNaN(data.getTime())) {
+
+            return Math.floor(
+                data.getTime() / 1000
+            );
+
+        }
+
+    }
+
+
+    return 0;
+
+}
+
+
+
+// ======================================================
+// MOSTRAR TODOS OS PEDIDOS
+// ======================================================
+
+function atualizarTela() {
+
+    const lista =
+        document.getElementById(
+            "lista-pedidos"
+        );
+
+
+    const todos = [
+
+        ...pedidosHospedes.map(
+            pedido => ({
+                ...pedido,
+                origem: "hospede"
+            })
+        ),
+
+        ...pedidosGarcom.map(
+            pedido => ({
+                ...pedido,
+                origem: "garcom"
+            })
+        )
+
+    ];
+
+
+    todos.sort(
+        (a, b) =>
+            obterTempo(b) -
+            obterTempo(a)
+    );
+
+
+    const contador =
+        document.getElementById(
+            "contador"
+        );
+
+
+    contador.textContent =
+        todos.length === 1
+            ? "1 pedido pendente"
+            : `${todos.length} pedidos pendentes`;
+
+
+    lista.innerHTML = "";
+
+
+    if (todos.length === 0) {
+
+        lista.innerHTML = `
+
+            <div class="sem-pedido">
+
+                <h2>📭 Nenhum pedido</h2>
+
+                <p>
+                    Nenhum pedido pendente.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    todos.forEach(pedido => {
+
+        criarCard(
+            pedido,
+            lista
+        );
+
+    });
+
+}
+
+
+
+// ======================================================
+// CRIAR CARD
+// ======================================================
+
+function criarCard(
+    pedido,
+    lista
+) {
+
+    const card =
+        document.createElement(
+            "article"
+        );
+
+
+    card.className =
+        "pedido-card";
+
+
+    const ehHospede =
+        pedido.origem ===
+        "hospede";
+
+
+    const tipoHTML =
+        ehHospede
+            ? `
+                <span class="tipo-pedido tipo-hospede">
+                    🌐 Pedido do Hóspede
+                </span>
+              `
+            : `
+                <span class="tipo-pedido tipo-garcom">
+                    🍽️ Pedido do Garçom
+                </span>
+              `;
+
+
+    const identificacao =
+        ehHospede
+            ? `
+                🚪 Quarto:
+                ${escaparHTML(
+                    pedido.quarto || "-"
+                )}
+              `
+            : `
+                🪑 Mesa:
+                ${String(
+                    pedido.mesa || ""
+                ).padStart(2, "0")}
+              `;
+
+
+    const itens =
+        Array.isArray(pedido.itens)
+            ? pedido.itens
+            : [];
+
+
+    let itensHTML = "";
+
+
+    itens.forEach(item => {
+
+        if (ehHospede) {
+
+            const subtotal =
+                Number(item.subtotal) ||
+                (
+                    Number(item.preco) *
+                    Number(item.quantidade)
+                );
+
+
+            itensHTML += `
+
+                <div class="item">
+
+                    <div class="item-esquerda">
+
+                        <strong>
+
+                            ${Number(
+                                item.quantidade
+                            )}x
+
+                            ${escaparHTML(
+                                item.nome
+                            )}
+
+                        </strong>
+
+                        <small>
+
+                            ${dinheiro(
+                                item.preco
+                            )}
+                            cada
+
+                        </small>
+
+                    </div>
+
+
+                    <strong>
+
+                        ${dinheiro(
+                            subtotal
+                        )}
+
+                    </strong>
+
+                </div>
+
+            `;
+
+        }
+
+        else {
+
+            itensHTML += `
+
+                <div class="item">
+
+                    <div class="item-esquerda">
+
+                        <strong>
+
+                            ${Number(
+                                item.quantidade
+                            )}x
+
+                            ${escaparHTML(
+                                item.nome
+                            )}
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+    });
+
+
+    const totalHTML =
+        ehHospede
+            ? `
+
+                <div class="linha"></div>
+
+                <div class="total">
+
+                    <span>
+                        TOTAL
+                    </span>
+
+                    <strong>
+
+                        ${dinheiro(
+                            pedido.total
+                        )}
+
+                    </strong>
+
+                </div>
+
+              `
+            : "";
+
+
+    card.innerHTML = `
+
+        ${tipoHTML}
+
+
+        <div class="identificacao">
+
+            ${identificacao}
+
+        </div>
+
+
+        <p>
+
+            🕒
+            ${escaparHTML(
+                pedido.dataHora || ""
+            )}
+
+        </p>
+
+
+        <div class="linha"></div>
+
+
+        <h3>
+            🍽️ Itens
+        </h3>
+
+
+        <div>
+
+            ${itensHTML}
+
+        </div>
+
+
+        <div class="linha"></div>
+
+
+        <div class="observacao">
+
+            <strong>
+                📝 Observação
+            </strong>
+
+            <p>
+
+                ${escaparHTML(
+                    pedido.observacao ||
+                    "Nenhuma"
+                )}
+
+            </p>
+
+        </div>
+
+
+        ${totalHTML}
+
+
+        <div class="acoes-central">
+
+            <button
+                class="botao imprimir"
+                data-imprimir="${pedido.id}"
+                data-origem="${pedido.origem}">
+
+                🖨️ Imprimir
+
+            </button>
+
+
+            <button
+                class="botao-finalizar"
+                data-finalizar="${pedido.id}"
+                data-origem="${pedido.origem}">
+
+                ✅ Finalizar
+
+            </button>
+
+        </div>
+
+    `;
+
+
+    lista.appendChild(card);
+
+}
+
+
+
+// ======================================================
+// CLIQUES
+// ======================================================
+
+document
+    .getElementById(
+        "lista-pedidos"
+    )
+    .addEventListener(
+        "click",
+        async event => {
+
+
+            const botaoImprimir =
+                event.target.closest(
+                    "[data-imprimir]"
+                );
+
+
+            if (botaoImprimir) {
+
+                const id =
+                    botaoImprimir.dataset.imprimir;
+
+                const origem =
+                    botaoImprimir.dataset.origem;
+
+
+                const pedido =
+                    origem === "hospede"
+
+                    ? pedidosHospedes.find(
+                        item =>
+                            item.id === id
+                    )
+
+                    : pedidosGarcom.find(
+                        item =>
+                            item.id === id
+                    );
+
+
+                if (origem === "hospede") {
+
+                    imprimirHospede(
+                        pedido
+                    );
+
+                }
+
+                else {
+
+                    imprimirGarcom(
+                        pedido
+                    );
+
+                }
+
+
+                return;
+
+            }
+
+
+
+            const botaoFinalizar =
+                event.target.closest(
+                    "[data-finalizar]"
+                );
+
+
+            if (botaoFinalizar) {
+
+                const id =
+                    botaoFinalizar.dataset.finalizar;
+
+                const origem =
+                    botaoFinalizar.dataset.origem;
+
+
+                const confirmar =
+                    confirm(
+                        "Finalizar este pedido?"
+                    );
+
+
+                if (!confirmar) {
+
+                    return;
+
+                }
+
+
+                if (origem === "hospede") {
+
+                    await deleteDoc(
+
+                        doc(
+                            dbHospedes,
+                            "pedidos",
+                            id
+                        )
+
+                    );
+
+                }
+
+                else {
+
+                    await deleteDoc(
+
+                        doc(
+                            dbGarcom,
+                            "pedidos_producao",
+                            id
+                        )
+
+                    );
+
+                }
+
+            }
+
+        }
+    );
+
+
+
+// ======================================================
+// IMPRESSÃO HÓSPEDE
+// ======================================================
+
+function imprimirHospede(pedido) {
+
+    if (!pedido) {
+        return;
+    }
+
+
+    let itensHTML = "";
+
+
+    pedido.itens.forEach(item => {
+
+        const subtotal =
+            Number(item.subtotal) ||
+            (
+                Number(item.preco) *
+                Number(item.quantidade)
+            );
+
+
+        itensHTML += `
+
+            <div class="linha-item">
+
+                <span>
+
+                    ${item.quantidade}x
+                    ${escaparHTML(
+                        item.nome
+                    )}
+
+                </span>
+
+                <span>
+
+                    ${dinheiro(
+                        subtotal
+                    )}
+
+                </span>
+
+            </div>
+
+        `;
+
+    });
+
+
+    abrirImpressao(`
+
+        <h1>
+            HOTEL DO BAÚ
+        </h1>
+
+        <h2>
+            PEDIDO DO HÓSPEDE
+        </h2>
+
+        <div class="separador"></div>
+
+        <h2>
+            QUARTO
+            ${escaparHTML(
+                pedido.quarto
+            )}
+        </h2>
+
+        <p class="central">
+            ${escaparHTML(
+                pedido.dataHora || ""
+            )}
+        </p>
+
+        <div class="separador"></div>
+
+        ${itensHTML}
+
+        <div class="separador"></div>
+
+        <strong>
+            OBSERVAÇÃO:
+        </strong>
+
+        <p>
+            ${escaparHTML(
+                pedido.observacao ||
+                "Nenhuma"
+            )}
+        </p>
+
+        <div class="separador"></div>
+
+        <div class="linha-item total-print">
+
+            <strong>
+                TOTAL
+            </strong>
+
+            <strong>
+                ${dinheiro(
+                    pedido.total
+                )}
+            </strong>
+
+        </div>
+
+    `);
+
+}
+
+
+
+// ======================================================
+// IMPRESSÃO GARÇOM
+// ======================================================
+
+function imprimirGarcom(pedido) {
+
+    if (!pedido) {
+        return;
+    }
+
+
+    let itensHTML = "";
+
+
+    pedido.itens.forEach(item => {
+
+        itensHTML += `
+
+            <div class="item-producao">
+
+                <strong>
+
+                    ${item.quantidade}x
+
+                    ${escaparHTML(
+                        item.nome
+                    )}
+
+                </strong>
+
+            </div>
+
+        `;
+
+    });
+
+
+    abrirImpressao(`
+
+        <h1>
+            HOTEL DO BAÚ
+        </h1>
+
+        <h2>
+            PRODUÇÃO
+        </h2>
+
+        <div class="separador"></div>
+
+        <h2 class="mesa-print">
+
+            MESA
+            ${String(
+                pedido.mesa
+            ).padStart(2, "0")}
+
+        </h2>
+
+        <p class="central">
+
+            ${escaparHTML(
+                pedido.dataHora || ""
+            )}
+
+        </p>
+
+        <div class="separador"></div>
+
+        ${itensHTML}
+
+        <div class="separador"></div>
+
+        <strong>
+            OBSERVAÇÃO:
+        </strong>
+
+        <p>
+            ${escaparHTML(
+                pedido.observacao ||
+                "Nenhuma"
+            )}
+        </p>
+
+    `);
+
+}
+
+
+
+// ======================================================
+// JANELA DE IMPRESSÃO 80MM
+// ======================================================
+
+function abrirImpressao(
+    conteudo
+) {
+
+    const janela =
+        window.open(
+            "",
+            "_blank",
+            "width=420,height=700"
+        );
+
+
+    if (!janela) {
+
+        alert(
+            "O navegador bloqueou a janela de impressão."
+        );
+
+        return;
+
+    }
+
+
+    janela.document.write(`
+
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>
+Impressão - Hotel do Baú
+</title>
+
+<style>
+
+@page {
+
+    size: 80mm auto;
+
+    margin: 3mm;
+
+}
+
+body {
+
+    font-family:
+        Arial,
+        sans-serif;
+
+    width: 72mm;
+
+    margin: 0 auto;
+
+    color: black;
+
+    font-size: 14px;
+
+}
+
+h1 {
+
+    text-align: center;
+
+    font-size: 20px;
+
+    margin: 0;
+
+}
+
+h2 {
+
+    text-align: center;
+
+    font-size: 17px;
+
+}
+
+.central {
+
+    text-align: center;
+
+}
+
+.separador {
+
+    border-top:
+        1px dashed black;
+
+    margin: 10px 0;
+
+}
+
+.linha-item {
+
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    gap: 10px;
+
+    margin: 8px 0;
+
+}
+
+.item-producao {
+
+    font-size: 17px;
+
+    margin: 12px 0;
+
+}
+
+.mesa-print {
+
+    font-size: 25px;
+
+}
+
+.total-print {
+
+    font-size: 18px;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+${conteudo}
+
+</body>
+
+</html>
+
+    `);
+
+
+    janela.document.close();
+
+
+    setTimeout(
+        () => {
+
+            janela.focus();
+
+            janela.print();
+
+        },
+        500
+    );
+
+}
+
+
+
+// ======================================================
+// FIREBASE HÓSPEDES
+// ======================================================
+
+onSnapshot(
+
+    collection(
+        dbHospedes,
+        "pedidos"
+    ),
+
+    snapshot => {
+
+        pedidosHospedes = [];
+
+
+        snapshot.forEach(
+            documento => {
+
+                pedidosHospedes.push({
+
+                    id:
+                        documento.id,
+
+                    ...documento.data()
+
+                });
+
+            }
+        );
+
+
+        document
+            .getElementById(
+                "status-hospedes"
+            )
+            .textContent =
+                "🟢 Hóspedes online";
+
+
+        atualizarTela();
+
+    },
+
+
+    erro => {
+
+        console.error(
+            "Erro hóspedes:",
+            erro
+        );
+
+
+        document
+            .getElementById(
+                "status-hospedes"
+            )
+            .textContent =
+                "🔴 Hóspedes offline";
+
+    }
+
+);
+
+
+
+// ======================================================
+// FIREBASE GARÇOM
+// ======================================================
+
+onSnapshot(
+
+    collection(
+        dbGarcom,
+        "pedidos_producao"
+    ),
+
+    snapshot => {
+
+        pedidosGarcom = [];
+
+
+        snapshot.forEach(
+            documento => {
+
+                pedidosGarcom.push({
+
+                    id:
+                        documento.id,
+
+                    ...documento.data()
+
+                });
+
+            }
+        );
+
+
+        document
+            .getElementById(
+                "status-garcom"
+            )
+            .textContent =
+                "🟢 Garçons online";
+
+
+        atualizarTela();
+
+    },
+
+
+    erro => {
+
+        console.error(
+            "Erro garçons:",
+            erro
+        );
+
+
+        document
+            .getElementById(
+                "status-garcom"
+            )
+            .textContent =
+                "🔴 Garçons offline";
+
+    }
+
+);
+
+</script>
+
+
+</body>
+
+</html>
