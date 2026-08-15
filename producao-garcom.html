@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Produção - Hotel do Baú</title>
+
+    <link rel="stylesheet" href="css/pedidos.css">
+
+</head>
+
+
+<body>
+
+
+<header class="topo">
+
+    <button
+        onclick="history.back()"
+        class="voltar">
+
+        ← Voltar
+
+    </button>
+
+
+    <div class="titulo">
+
+        <h1>🍽️ Produção</h1>
+
+        <p>
+            Pedidos dos garçons
+        </p>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+
+    <div class="barra-pedidos">
+
+        <span id="contador-pedidos">
+            0 pedidos pendentes
+        </span>
+
+
+        <span id="status-conexao">
+            🟡 Conectando...
+        </span>
+
+    </div>
+
+
+    <section id="lista-pedidos">
+
+        <div class="sem-pedido">
+
+            <h2>⏳ Carregando...</h2>
+
+            <p>
+                Buscando pedidos da produção.
+            </p>
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getFirestore,
+    collection,
+    onSnapshot,
+    deleteDoc,
+    doc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+// ===========================
+// FIREBASE HOTEL GARCOM
+// ===========================
+
+const firebaseConfig = {
+
+    apiKey:
+        "AIzaSyDaj28MSSHMKfsofE27DfKcsdCD2MUngGA",
+
+    authDomain:
+        "hotel-garcom.firebaseapp.com",
+
+    projectId:
+        "hotel-garcom",
+
+    storageBucket:
+        "hotel-garcom.firebasestorage.app",
+
+    messagingSenderId:
+        "357749341622",
+
+    appId:
+        "1:357749341622:web:b5ff6267d5be911d681517"
+
+};
+
+
+const app =
+    initializeApp(firebaseConfig);
+
+const db =
+    getFirestore(app);
+
+
+// ===========================
+// ESCAPAR HTML
+// ===========================
+
+function escaparHTML(texto) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        texto ?? "";
+
+    return div.innerHTML;
+
+}
+
+
+// ===========================
+// MOSTRAR PEDIDOS
+// ===========================
+
+function mostrarPedidos(pedidos) {
+
+    const lista =
+        document.getElementById(
+            "lista-pedidos"
+        );
+
+    const contador =
+        document.getElementById(
+            "contador-pedidos"
+        );
+
+
+    contador.textContent =
+        pedidos.length === 1
+            ? "1 pedido pendente"
+            : `${pedidos.length} pedidos pendentes`;
+
+
+    lista.innerHTML = "";
+
+
+    if (pedidos.length === 0) {
+
+        lista.innerHTML = `
+
+            <div class="sem-pedido">
+
+                <h2>📭 Nenhum pedido</h2>
+
+                <p>
+                    Nenhum pedido aguardando produção.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    pedidos.sort((a, b) => {
+
+        const tempoA =
+            a.criadoEm?.seconds || 0;
+
+        const tempoB =
+            b.criadoEm?.seconds || 0;
+
+        return tempoA - tempoB;
+
+    });
+
+
+    pedidos.forEach(pedido => {
+
+
+        const card =
+            document.createElement(
+                "article"
+            );
+
+
+        card.className =
+            "pedido-card";
+
+
+        let itensHTML = "";
+
+
+        const itens =
+            Array.isArray(pedido.itens)
+                ? pedido.itens
+                : [];
+
+
+        itens.forEach(item => {
+
+            itensHTML += `
+
+                <div class="item">
+
+                    <div class="item-esquerda">
+
+                        <strong>
+
+                            ${Number(item.quantidade)}x
+
+                            ${escaparHTML(
+                                item.nome
+                            )}
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        });
+
+
+        card.innerHTML = `
+
+            <div class="pedido-topo">
+
+                <div>
+
+                    <h2>
+                        🍽️ Pedido para Produção
+                    </h2>
+
+                    <p>
+
+                        🪑 Mesa:
+
+                        <strong>
+                            ${String(
+                                pedido.mesa
+                            ).padStart(2, "0")}
+                        </strong>
+
+                    </p>
+
+                </div>
+
+                <span class="status novo">
+                    🟢 Novo
+                </span>
+
+            </div>
+
+
+            <p class="data-hora">
+
+                🕒 ${escaparHTML(
+                    pedido.dataHora || ""
+                )}
+
+            </p>
+
+
+            <div class="linha"></div>
+
+
+            <h3>
+                Itens
+            </h3>
+
+
+            <div class="itens">
+
+                ${itensHTML}
+
+            </div>
+
+
+            <div class="linha"></div>
+
+
+            <div class="observacao">
+
+                <strong>
+                    📝 Observação
+                </strong>
+
+                <p>
+
+                    ${escaparHTML(
+                        pedido.observacao ||
+                        "Nenhuma"
+                    )}
+
+                </p>
+
+            </div>
+
+
+            <div class="acoes-pedido">
+
+                <button
+                    class="botao imprimir"
+                    data-imprimir="${pedido.id}">
+
+                    🖨️ Imprimir produção
+
+                </button>
+
+                <button
+                    class="botao remover"
+                    data-remover="${pedido.id}">
+
+                    ✅ Finalizar
+
+                </button>
+
+            </div>
+
+        `;
+
+
+        lista.appendChild(card);
+
+    });
+
+
+    // ===========================
+    // BOTÃO IMPRIMIR
+    // ===========================
+
+    document
+        .querySelectorAll(
+            "[data-imprimir]"
+        )
+        .forEach(botao => {
+
+            botao.onclick = () => {
+
+                const id =
+                    botao.getAttribute(
+                        "data-imprimir"
+                    );
+
+                const pedido =
+                    pedidos.find(
+                        item =>
+                            item.id === id
+                    );
+
+                imprimirPedido(
+                    pedido
+                );
+
+            };
+
+        });
+
+
+    // ===========================
+    // BOTÃO FINALIZAR
+    // ===========================
+
+    document
+        .querySelectorAll(
+            "[data-remover]"
+        )
+        .forEach(botao => {
+
+            botao.onclick =
+                async () => {
+
+                    const id =
+                        botao.getAttribute(
+                            "data-remover"
+                        );
+
+                    const confirmar =
+                        confirm(
+                            "Finalizar este pedido da produção?"
+                        );
+
+                    if (!confirmar) {
+                        return;
+                    }
+
+
+                    await deleteDoc(
+                        doc(
+                            db,
+                            "pedidos_producao",
+                            id
+                        )
+                    );
+
+                };
+
+        });
+
+}
+
+
+// ===========================
+// IMPRESSÃO
+// ===========================
+
+function imprimirPedido(pedido) {
+
+    if (!pedido) {
+
+        alert(
+            "Pedido não encontrado."
+        );
+
+        return;
+
+    }
+
+
+    let itensHTML = "";
+
+
+    const itens =
+        Array.isArray(pedido.itens)
+            ? pedido.itens
+            : [];
+
+
+    itens.forEach(item => {
+
+        itensHTML += `
+
+            <div class="item-print">
+
+                <strong>
+                    ${Number(item.quantidade)}x
+                    ${escaparHTML(item.nome)}
+                </strong>
+
+            </div>
+
+        `;
+
+    });
+
+
+    const janela =
+        window.open(
+            "",
+            "_blank",
+            "width=420,height=700"
+        );
+
+
+    if (!janela) {
+
+        alert(
+            "O navegador bloqueou a janela de impressão."
+        );
+
+        return;
+
+    }
+
+
+    janela.document.write(`
+
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>
+Produção - Hotel do Baú
+</title>
+
+<style>
+
+@page {
+
+    size: 80mm auto;
+
+    margin: 3mm;
+
+}
+
+body {
+
+    font-family: Arial, sans-serif;
+
+    width: 72mm;
+
+    margin: 0 auto;
+
+    color: #000;
+
+    font-size: 14px;
+
+}
+
+h1 {
+
+    text-align: center;
+
+    margin: 0;
+
+    font-size: 20px;
+
+}
+
+h2 {
+
+    text-align: center;
+
+    margin: 5px 0;
+
+    font-size: 17px;
+
+}
+
+.mesa {
+
+    text-align: center;
+
+    font-size: 24px;
+
+    font-weight: bold;
+
+    margin: 12px 0;
+
+}
+
+.separador {
+
+    border-top: 1px dashed #000;
+
+    margin: 10px 0;
+
+}
+
+.item-print {
+
+    margin: 10px 0;
+
+    font-size: 16px;
+
+}
+
+.obs {
+
+    white-space: pre-wrap;
+
+    font-size: 15px;
+
+}
+
+.central {
+
+    text-align: center;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<h1>
+HOTEL DO BAÚ
+</h1>
+
+
+<h2>
+PRODUÇÃO
+</h2>
+
+
+<div class="separador"></div>
+
+
+<div class="mesa">
+
+MESA
+${String(
+    pedido.mesa
+).padStart(2, "0")}
+
+</div>
+
+
+<p class="central">
+
+${escaparHTML(
+    pedido.dataHora || ""
+)}
+
+</p>
+
+
+<div class="separador"></div>
+
+
+${itensHTML}
+
+
+<div class="separador"></div>
+
+
+<strong>
+OBSERVAÇÃO:
+</strong>
+
+
+<p class="obs">
+
+${escaparHTML(
+    pedido.observacao ||
+    "Nenhuma"
+)}
+
+</p>
+
+
+<div class="separador"></div>
+
+
+<p class="central">
+
+Pedido de produção
+
+</p>
+
+
+</body>
+
+</html>
+
+    `);
+
+
+    janela.document.close();
+
+
+    setTimeout(
+        () => {
+
+            janela.focus();
+
+            janela.print();
+
+        },
+        500
+    );
+
+}
+
+
+// ===========================
+// FIREBASE EM TEMPO REAL
+// ===========================
+
+const referencia =
+    collection(
+        db,
+        "pedidos_producao"
+    );
+
+
+onSnapshot(
+
+    referencia,
+
+    snapshot => {
+
+        const pedidos = [];
+
+
+        snapshot.forEach(
+            documento => {
+
+                pedidos.push({
+
+                    id:
+                        documento.id,
+
+                    ...documento.data()
+
+                });
+
+            }
+        );
+
+
+        document
+            .getElementById(
+                "status-conexao"
+            )
+            .textContent =
+                "🟢 Online";
+
+
+        mostrarPedidos(
+            pedidos
+        );
+
+    },
+
+
+    erro => {
+
+        console.error(
+            "Erro Firebase:",
+            erro
+        );
+
+
+        document
+            .getElementById(
+                "status-conexao"
+            )
+            .textContent =
+                "🔴 Erro de conexão";
+
+    }
+
+);
+
+</script>
+
+
+</body>
+
+</html>
