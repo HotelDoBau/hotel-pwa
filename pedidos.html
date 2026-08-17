@@ -208,6 +208,9 @@ let pedidosGarcom = [];
 let primeiraLeituraHospedes = true;
 let primeiraLeituraGarcom = true;
 
+// Impressão automática: somente pedidos que chegarem depois que a Central abrir.
+const impressoesAutomaticasEmAndamento = new Set();
+
 
 // =====================================================
 // UTILIDADES
@@ -323,6 +326,33 @@ function avisarNovoPedido(pedido, origem) {
             window.focus();
             notificacao.close();
         };
+    }
+}
+
+
+// =====================================================
+// IMPRESSÃO AUTOMÁTICA
+// =====================================================
+
+function imprimirPedidoAutomaticamente(pedido, origem) {
+    if (!pedido?.id) return;
+
+    const chave = `${origem}:${pedido.id}`;
+
+    // Evita disparar duas vezes enquanto o mesmo pedido está sendo processado.
+    if (impressoesAutomaticasEmAndamento.has(chave)) return;
+
+    impressoesAutomaticasEmAndamento.add(chave);
+
+    try {
+        if (origem === "hospede") {
+            imprimirHospede(pedido, true);
+        } else {
+            imprimirGarcom(pedido, true);
+        }
+    } catch (erro) {
+        impressoesAutomaticasEmAndamento.delete(chave);
+        console.error("Erro na impressão automática:", erro);
     }
 }
 
@@ -529,7 +559,7 @@ document.getElementById("lista-pedidos").addEventListener("click", async event =
 // IMPRESSÃO - HÓSPEDE
 // =====================================================
 
-async function imprimirHospede(pedido) {
+async function imprimirHospede(pedido, automatico = false) {
 
     if (!pedido) {
         alert("Pedido não encontrado.");
@@ -633,19 +663,22 @@ async function imprimirHospede(pedido) {
 
         async function () {
 
-            const confirmar = confirm(
-                "A impressão do pedido do quarto " +
-                (pedido.quarto || "-") +
-                " saiu corretamente?"
-            );
-
-
-            if (!confirmar) {
-                return;
-            }
-
+            const chave = `hospede:${pedido.id}`;
 
             try {
+                // No modo automático do Brave (--kiosk-printing), não pede confirmação.
+                // No botão manual, mantém a confirmação de segurança.
+                if (!automatico) {
+                    const confirmar = confirm(
+                        "A impressão do pedido do quarto " +
+                        (pedido.quarto || "-") +
+                        " saiu corretamente?"
+                    );
+
+                    if (!confirmar) {
+                        return;
+                    }
+                }
 
                 await deleteDoc(
                     doc(
@@ -657,16 +690,13 @@ async function imprimirHospede(pedido) {
 
             }
             catch (erro) {
-
-                console.error(
-                    "Erro ao finalizar pedido:",
-                    erro
-                );
-
+                console.error("Erro ao finalizar pedido:", erro);
                 alert(
                     "A impressão saiu, mas não foi possível retirar o pedido da tela."
                 );
-
+            }
+            finally {
+                impressoesAutomaticasEmAndamento.delete(chave);
             }
 
         }
@@ -679,7 +709,7 @@ async function imprimirHospede(pedido) {
 // IMPRESSÃO - GARÇOM / PRODUÇÃO
 // =====================================================
 
-async function imprimirGarcom(pedido) {
+async function imprimirGarcom(pedido, automatico = false) {
 
     if (!pedido) {
         alert("Pedido não encontrado.");
@@ -767,44 +797,40 @@ async function imprimirGarcom(pedido) {
 
         async function () {
 
-            const confirmar = confirm(
-                "A impressão da Mesa " +
-                String(
-                    pedido.mesa || ""
-                ).padStart(2, "0") +
-                " saiu corretamente?"
-            );
-
-
-            if (!confirmar) {
-                return;
-            }
-
+            const chave = `garcom:${pedido.id}`;
 
             try {
+                // No modo automático do Brave (--kiosk-printing), não pede confirmação.
+                // No botão manual, mantém a confirmação de segurança.
+                if (!automatico) {
+                    const confirmar = confirm(
+                        "A impressão da Mesa " +
+                        String(pedido.mesa || "").padStart(2, "0") +
+                        " saiu corretamente?"
+                    );
+
+                    if (!confirmar) {
+                        return;
+                    }
+                }
 
                 await deleteDoc(
-
                     doc(
                         dbGarcom,
                         "pedidos_producao",
                         pedido.id
                     )
-
                 );
 
             }
             catch (erro) {
-
-                console.error(
-                    "Erro ao finalizar produção:",
-                    erro
-                );
-
+                console.error("Erro ao finalizar produção:", erro);
                 alert(
                     "A impressão saiu, mas não foi possível retirar o pedido da fila."
                 );
-
+            }
+            finally {
+                impressoesAutomaticasEmAndamento.delete(chave);
             }
 
         }
@@ -992,46 +1018,22 @@ ${conteudo}
 
 
     setTimeout(
-        function () {
+        async function () {
 
             janela.focus();
 
+            // Com o Brave aberto usando --kiosk-printing, a impressão é enviada direto.
+            // Quando print() retorna, podemos fechar a janela e retirar o pedido da fila.
             janela.print();
+            janela.close();
+
+            if (typeof aoFinalizar === "function") {
+                await aoFinalizar();
+            }
 
         },
         500
     );
-
-
-    const verificarJanela =
-        setInterval(
-
-            function () {
-
-                if (janela.closed) {
-
-                    clearInterval(
-                        verificarJanela
-                    );
-
-
-                    if (
-                        typeof aoFinalizar
-                        ===
-                        "function"
-                    ) {
-
-                        aoFinalizar();
-
-                    }
-
-                }
-
-            },
-
-            500
-
-        );
 
 }
 
@@ -1046,13 +1048,13 @@ onSnapshot(
         if (!primeiraLeituraHospedes) {
             snapshot.docChanges().forEach(alteracao => {
                 if (alteracao.type === "added") {
-                    avisarNovoPedido(
-                        {
-                            id: alteracao.doc.id,
-                            ...alteracao.doc.data()
-                        },
-                        "hospede"
-                    );
+                    const pedidoNovo = {
+                        id: alteracao.doc.id,
+                        ...alteracao.doc.data()
+                    };
+
+                    avisarNovoPedido(pedidoNovo, "hospede");
+                    imprimirPedidoAutomaticamente(pedidoNovo, "hospede");
                 }
             });
         }
@@ -1090,13 +1092,13 @@ onSnapshot(
         if (!primeiraLeituraGarcom) {
             snapshot.docChanges().forEach(alteracao => {
                 if (alteracao.type === "added") {
-                    avisarNovoPedido(
-                        {
-                            id: alteracao.doc.id,
-                            ...alteracao.doc.data()
-                        },
-                        "garcom"
-                    );
+                    const pedidoNovo = {
+                        id: alteracao.doc.id,
+                        ...alteracao.doc.data()
+                    };
+
+                    avisarNovoPedido(pedidoNovo, "garcom");
+                    imprimirPedidoAutomaticamente(pedidoNovo, "garcom");
                 }
             });
         }
