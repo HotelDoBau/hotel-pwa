@@ -843,31 +843,37 @@ async function imprimirGarcom(pedido, automatico = false) {
 // JANELA DE IMPRESSÃO 80MM
 // =====================================================
 
-function abrirImpressao(
+async function abrirImpressao(
     conteudo,
     aoFinalizar
 ) {
 
-    const janela =
-        window.open(
-            "",
-            "_blank",
-            "width=420,height=700"
-        );
+    // Usa um iframe invisível em vez de window.open().
+    // Isso evita o bloqueio de pop-up quando a impressão é automática.
+
+    const iframe =
+        document.createElement("iframe");
+
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "1px";
+    iframe.style.height = "1px";
+    iframe.style.border = "0";
+    iframe.style.opacity = "0";
+    iframe.setAttribute("aria-hidden", "true");
+
+    document.body.appendChild(iframe);
 
 
-    if (!janela) {
-
-        alert(
-            "O navegador bloqueou a janela de impressão."
-        );
-
-        return;
-
-    }
+    const documento =
+        iframe.contentDocument ||
+        iframe.contentWindow.document;
 
 
-    janela.document.write(`
+    documento.open();
+
+    documento.write(`
 
 <!DOCTYPE html>
 
@@ -1013,27 +1019,55 @@ ${conteudo}
 
     `);
 
+    documento.close();
 
-    janela.document.close();
 
-
-    setTimeout(
-        async function () {
-
-            janela.focus();
-
-            // Com o Brave aberto usando --kiosk-printing, a impressão é enviada direto.
-            // Quando print() retorna, podemos fechar a janela e retirar o pedido da fila.
-            janela.print();
-            janela.close();
-
-            if (typeof aoFinalizar === "function") {
-                await aoFinalizar();
-            }
-
-        },
-        500
+    await new Promise(
+        resolve => setTimeout(resolve, 700)
     );
+
+
+    try {
+
+        iframe.contentWindow.focus();
+
+        // No Brave iniciado com --kiosk-printing,
+        // print() envia direto para a impressora selecionada.
+        iframe.contentWindow.print();
+
+
+        // Dá tempo para o trabalho ser enviado antes de remover o iframe.
+        await new Promise(
+            resolve => setTimeout(resolve, 1200)
+        );
+
+
+        if (typeof aoFinalizar === "function") {
+
+            await aoFinalizar();
+
+        }
+
+    }
+
+    catch (erro) {
+
+        console.error(
+            "Erro ao imprimir automaticamente:",
+            erro
+        );
+
+        alert(
+            "Não foi possível imprimir automaticamente."
+        );
+
+    }
+
+    finally {
+
+        iframe.remove();
+
+    }
 
 }
 
