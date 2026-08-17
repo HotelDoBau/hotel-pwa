@@ -101,22 +101,6 @@ const produtos = [
     },
 
     {
-        id: 13,
-        nome: "Cappuccino Doce de Leite",
-        categoria: "Cafeteria",
-        preco: 11.00,
-        imagem: "img/cappuccino-doce-leite.webp"
-    },
-
-    {
-        id: 14,
-        nome: "Cappuccino Brigadeiro",
-        categoria: "Cafeteria",
-        preco: 11.00,
-        imagem: "img/cappuccino-brigadeiro.webp"
-    },
-
-    {
         id: 15,
         nome: "Cappuccino Canela",
         categoria: "Cafeteria",
