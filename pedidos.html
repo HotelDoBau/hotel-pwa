@@ -134,6 +134,7 @@
     <div class="status-origens">
         <span id="status-hospedes" class="status-origem">🟡 Hóspedes conectando...</span>
         <span id="status-garcom" class="status-origem">🟡 Garçons conectando...</span>
+        <span id="status-fechamentos" class="status-origem">🟡 Fechamentos conectando...</span>
     </div>
 
     <section id="lista-pedidos">
@@ -155,7 +156,10 @@ import {
     collection,
     onSnapshot,
     deleteDoc,
-    doc
+    doc,
+    getDocs,
+    setDoc,
+    serverTimestamp
 } from
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -207,6 +211,7 @@ let pedidosHospedes = [];
 let pedidosGarcom = [];
 let primeiraLeituraHospedes = true;
 let primeiraLeituraGarcom = true;
+const fechamentosEmAndamento = new Set();
 
 // Impressão automática: somente pedidos que chegarem depois que a Central abrir.
 const impressoesAutomaticasEmAndamento = new Set();
@@ -840,6 +845,208 @@ async function imprimirGarcom(pedido, automatico = false) {
 }
 
 // =====================================================
+// IMPRESSÃO - FECHAMENTO DE MESA
+// =====================================================
+
+async function imprimirFechamento(fechamento) {
+
+    if (!fechamento?.id) return;
+
+    if (fechamentosEmAndamento.has(fechamento.id)) {
+        return;
+    }
+
+    fechamentosEmAndamento.add(fechamento.id);
+
+
+    const itens =
+        Array.isArray(fechamento.itens)
+            ? fechamento.itens
+            : [];
+
+
+    let itensHTML = "";
+
+
+    itens.forEach(item => {
+
+        const subtotal =
+            Number(item.preco || 0) *
+            Number(item.quantidade || 0);
+
+
+        itensHTML += `
+
+            <div class="linha-item-impressao">
+
+                <span>
+                    ${Number(item.quantidade || 0)}x
+                    ${escaparHTML(item.nome || "")}
+                </span>
+
+                <span>
+                    ${dinheiro(subtotal)}
+                </span>
+
+            </div>
+
+        `;
+
+    });
+
+
+    abrirImpressao(
+
+        `
+        <h1>HOTEL DO BAÚ</h1>
+
+        <h2>FECHAMENTO</h2>
+
+        <div class="separador"></div>
+
+        <p class="identificacao-print mesa-print">
+            MESA
+            ${String(fechamento.mesa || "").padStart(2, "0")}
+        </p>
+
+        <p class="central">
+            ${escaparHTML(fechamento.dataHora || "")}
+        </p>
+
+        <div class="separador"></div>
+
+        ${itensHTML}
+
+        <div class="separador"></div>
+
+        <div class="total-impressao">
+            <span>TOTAL</span>
+            <span>${dinheiro(fechamento.total)}</span>
+        </div>
+
+        <div class="separador"></div>
+
+        <p class="central">
+            Hotel do Baú
+            <br>
+            Obrigado!
+        </p>
+        `,
+
+        async function () {
+
+            try {
+
+                const idMesa =
+                    fechamento.idMesa ||
+                    (
+                        "mesa_" +
+                        String(fechamento.mesa || "")
+                            .padStart(2, "0")
+                    );
+
+
+                // Apaga todos os pedidos acumulados da mesa.
+                const referenciaPedidos =
+                    collection(
+                        dbGarcom,
+                        "mesas",
+                        idMesa,
+                        "pedidos"
+                    );
+
+
+                const snapshotPedidos =
+                    await getDocs(
+                        referenciaPedidos
+                    );
+
+
+                const exclusoes = [];
+
+
+                snapshotPedidos.forEach(documento => {
+
+                    exclusoes.push(
+                        deleteDoc(
+                            doc(
+                                dbGarcom,
+                                "mesas",
+                                idMesa,
+                                "pedidos",
+                                documento.id
+                            )
+                        )
+                    );
+
+                });
+
+
+                await Promise.all(exclusoes);
+
+
+                // Só depois da impressão a mesa volta a ficar livre.
+                await setDoc(
+                    doc(
+                        dbGarcom,
+                        "mesas",
+                        idMesa
+                    ),
+                    {
+                        numero: Number(fechamento.mesa),
+                        status: "livre",
+                        atualizadoEm: serverTimestamp()
+                    },
+                    {
+                        merge: true
+                    }
+                );
+
+
+                // Retira o fechamento da fila.
+                await deleteDoc(
+                    doc(
+                        dbGarcom,
+                        "fechamentos",
+                        fechamento.id
+                    )
+                );
+
+            }
+
+            catch (erro) {
+
+                console.error(
+                    "Erro ao concluir fechamento:",
+                    erro
+                );
+
+
+                alert(
+                    "⚠️ A conta foi impressa, mas não foi possível liberar a mesa.\n\n" +
+                    (erro.code || "sem código") +
+                    "\n\n" +
+                    (erro.message || erro)
+                );
+
+            }
+
+            finally {
+
+                fechamentosEmAndamento.delete(
+                    fechamento.id
+                );
+
+            }
+
+        }
+
+    );
+
+}
+
+
+// =====================================================
 // JANELA DE IMPRESSÃO 80MM
 // =====================================================
 
@@ -1156,6 +1363,60 @@ onSnapshot(
         console.error("Erro garçons:", erro);
         document.getElementById("status-garcom").textContent =
             "🔴 Garçons offline";
+    }
+);
+
+
+// =====================================================
+// FIREBASE - FECHAMENTOS DAS MESAS
+// =====================================================
+
+onSnapshot(
+    collection(dbGarcom, "fechamentos"),
+
+    snapshot => {
+
+        document.getElementById(
+            "status-fechamentos"
+        ).textContent =
+            "🟢 Fechamentos online";
+
+
+        // Fechamentos pendentes também são impressos na primeira leitura.
+        // Assim, se o computador estava fechado, a conta não é perdida.
+        snapshot.docChanges().forEach(alteracao => {
+
+            if (alteracao.type === "added") {
+
+                const fechamento = {
+                    id: alteracao.doc.id,
+                    ...alteracao.doc.data()
+                };
+
+
+                imprimirFechamento(
+                    fechamento
+                );
+
+            }
+
+        });
+
+    },
+
+    erro => {
+
+        console.error(
+            "Erro fechamentos:",
+            erro
+        );
+
+
+        document.getElementById(
+            "status-fechamentos"
+        ).textContent =
+            "🔴 Fechamentos offline";
+
     }
 );
 
