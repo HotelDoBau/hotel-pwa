@@ -913,13 +913,22 @@ async function imprimirFechamento(fechamento) {
         <div class="separador"></div>
 
         <p class="identificacao-print mesa-print">
-            MESA
-            ${String(fechamento.mesa || "").padStart(2, "0")}
-        </p>
+    MESA
+    ${String(fechamento.mesa || "").padStart(2, "0")}
+</p>
 
-        <p class="central">
-            ${escaparHTML(fechamento.dataHora || "")}
+${fechamento.quarto
+    ? `
+        <p class="identificacao-print">
+            QUARTO ${escaparHTML(fechamento.quarto)}
         </p>
+      `
+    : ""
+}
+
+<p class="central">
+    ${escaparHTML(fechamento.dataHora || "")}
+</p>
 
         <div class="separador"></div>
 
