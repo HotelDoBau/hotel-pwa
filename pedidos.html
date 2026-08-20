@@ -765,12 +765,13 @@ async function imprimirGarcom(pedido, automatico = false) {
 
         <p class="identificacao-print mesa-print">
 
-            MESA
-            ${String(
-                pedido.mesa || ""
-            ).padStart(2, "0")}
+    MESA
+    ${String(
+        pedido.mesa || ""
+    ).padStart(2, "0")}
 
-        </p>
+</p>
+
 ${pedido.quarto
     ? `
         <p class="identificacao-print">
