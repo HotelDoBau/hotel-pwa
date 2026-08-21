@@ -119,18 +119,15 @@ footer a {
 ========================= */
 
 .topo-recepcao {
-    width: 100%;
-    padding: 0;
-    margin: 0;
-    background: #f7f2eb;
-    overflow: hidden;
-    border-radius: 0 0 30px 30px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-}
+    height: 320px;
 
-.topo-recepcao img {
-    width: 100%;
-    height: auto;
-    display: block;
-    margin: 0;
+    background-image: url("../img/recepcao.webp");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-color: #f7f2eb;
+
+    border-radius: 0 0 30px 30px;
+
+    position: relative;
 }
