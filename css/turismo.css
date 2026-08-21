@@ -1,0 +1,148 @@
+body {
+    margin: 0;
+    font-family: 'Poppins', Arial, sans-serif;
+    background: #f5f5f5;
+    color: #333;
+}
+
+
+/* =========================
+   CABEÇALHO
+========================= */
+
+header {
+    background: #ffffff;
+    text-align: center;
+    padding: 25px 20px 30px;
+    border-radius: 0 0 30px 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+header img {
+    width: 120px;
+    height: auto;
+    display: block;
+    margin: 0 auto 15px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 32px;
+    color: #123b5d;
+}
+
+header p {
+    margin: 8px 0 0;
+    font-size: 16px;
+    color: #666;
+}
+
+
+/* =========================
+   CARDS
+========================= */
+
+.cardapio-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+
+    max-width: 1400px;
+    margin: 35px auto;
+    padding: 0 25px 40px;
+}
+
+.card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+
+    display: flex;
+    flex-direction: column;
+}
+
+.imagem-card {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    display: block;
+}
+
+.card h2 {
+    font-size: 20px;
+    color: #123b5d;
+    margin: 20px 20px 15px;
+}
+
+
+/* =========================
+   BOTÃO LOCALIZAÇÃO
+========================= */
+
+.acessos-rapidos {
+    margin-top: auto;
+    padding: 0 20px 22px;
+}
+
+.botao-card {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+
+    background: #123b5d;
+    color: white;
+
+    padding: 13px 15px;
+    border-radius: 10px;
+
+    text-align: center;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.botao-card:hover {
+    opacity: 0.9;
+}
+
+
+/* =========================
+   RODAPÉ
+========================= */
+
+footer {
+    text-align: center;
+    padding: 25px;
+}
+
+footer a {
+    color: #123b5d;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+
+/* =========================
+   CELULAR
+========================= */
+
+@media (max-width: 800px) {
+
+    .cardapio-container {
+        grid-template-columns: 1fr;
+        padding: 0 15px 30px;
+    }
+
+    .imagem-card {
+        height: 220px;
+    }
+
+    header img {
+        width: 100px;
+    }
+
+    header h1 {
+        font-size: 27px;
+    }
+
+}
