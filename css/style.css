@@ -228,3 +228,10 @@ body {
 .carrinho-escondido {
     transform: translateY(100%);
 }
+/* CENTRALIZA O ÚLTIMO CARD DO MENU */
+
+.menu .opcao:last-child {
+    grid-column: 1 / -1;
+    width: calc(50% - 9px);
+    justify-self: center;
+}
