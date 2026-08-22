@@ -77,28 +77,20 @@ body {
 /* MENU */
 
 .menu {
-
     padding: 25px;
-
     display: grid;
-
     grid-template-columns: repeat(2, 1fr);
-
     gap: 18px;
-
+    align-items: stretch;
 }
 
 
 /* BOTÕES */
 
 .opcao {
-
     background: white;
-
     text-decoration: none;
-
     color: #333;
-
     text-align: center;
 
     padding: 25px 15px;
@@ -106,26 +98,47 @@ body {
     border-radius: 18px;
 
     box-shadow:
-    0 5px 15px rgba(0,0,0,.15);
+        0 5px 15px rgba(0,0,0,.15);
 
     transition: .3s;
 
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 .opcao:hover {
-
     transform: translateY(-5px);
+}
+/* =========================
+   ÍCONES DOURADOS DO MENU
+========================= */
 
+.icone-menu {
+    width: 62px;
+    height: 62px;
+
+    margin: 0 auto 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #C58A00;
 }
 
+.icone-menu svg {
+    width: 58px;
+    height: 58px;
 
-.opcao:first-letter {
-
-    font-size: 45px;
-
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
-
-
 .opcao h2 {
 
     margin: 12px 0 8px;
