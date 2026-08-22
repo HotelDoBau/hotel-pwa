@@ -25,6 +25,8 @@ body {
 
     padding: 35px 20px 30px;
 
+    min-height: 260px;
+
     background-image: url("../img/vista-hotel.webp");
 
     background-size: cover;
