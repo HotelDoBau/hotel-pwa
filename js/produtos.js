@@ -824,6 +824,27 @@ const produtos = [
     categoria: "Doces",
     preco: 17.00,
     observacao: "Bolo gelado de coco com uma bola de sorvete de creme e 50ml de leite condensado"
-}   
+},
+    {
+    id: 112,
+    nome: "Batata Rústica Artesanal",
+    categoria: "Petiscos",
+    preco: 33.00,
+    observacao: "Batatas rústicas temperadas com páprica e sal. Acompanha 3 mini molhos da casa."
+},
+{
+    id: 113,
+    nome: "Calabresa Fatiada",
+    categoria: "Petiscos",
+    preco: 35.00,
+    observacao: "Linguiça calabresa acebolada. Acompanha cesta de rodelas de pão."
+},
+{
+    id: 114,
+    nome: "Pote de Salgadinho Diversos",
+    categoria: "Petiscos",
+    preco: 4.00,
+    observacao: "Salgadinhos fritinhos de farinha."
+}
     
 ];
