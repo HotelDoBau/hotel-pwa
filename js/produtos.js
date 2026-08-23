@@ -740,5 +740,90 @@ const produtos = [
     categoria: "Drinks",
     preco: 32.00,
     observacao: "Gin + Limão + Xarope + Angostura"
-}
+},
+
+ {
+    id: 100,
+    nome: "Salada de Fruta",
+    categoria: "Doces",
+    preco: 10.00,
+    observacao: "Mamão, manga, melão e uva"
+},
+{
+    id: 101,
+    nome: "Granola",
+    categoria: "Doces",
+    preco: 3.45,
+    observacao: "Adicionar porção de granola"
+},
+{
+    id: 102,
+    nome: "Iogurte",
+    categoria: "Doces",
+    preco: 1.70,
+    observacao: "Adicionar 50ml de iogurte de morango"
+},
+{
+    id: 103,
+    nome: "Leite Condensado",
+    categoria: "Doces",
+    preco: 2.00,
+    observacao: "Adicionar 50ml de leite condensado"
+},
+{
+    id: 104,
+    nome: "Mel",
+    categoria: "Doces",
+    preco: 2.20,
+    observacao: "Adicionar blister de mel"
+},
+{
+    id: 105,
+    nome: "Geléia",
+    categoria: "Doces",
+    preco: 1.50,
+    observacao: "Adicionar um blister de geléia"
+},
+{
+    id: 106,
+    nome: "Bolo do Dia",
+    categoria: "Doces",
+    preco: 5.00,
+    observacao: "Fatia pequena de bolo do dia"
+},
+{
+    id: 107,
+    nome: "Pudim de Leite",
+    categoria: "Doces",
+    preco: 7.00,
+    observacao: "Pudim de leite com calda de caramelo"
+},
+{
+    id: 108,
+    nome: "Banoffee",
+    categoria: "Doces",
+    preco: 9.00,
+    observacao: "Biscoito, doce de leite, banana, chantilly e canela"
+},
+{
+    id: 109,
+    nome: "Bolo Gelado de Coco",
+    categoria: "Doces",
+    preco: 10.00
+},
+{
+    id: 110,
+    nome: "Bolo Gelado de Coco com Sorvete",
+    categoria: "Doces",
+    preco: 14.00,
+    observacao: "Bolo gelado de coco com uma bola de sorvete de creme"
+},
+{
+    id: 111,
+    nome: "Bolo Gelado de Coco com Sorvete e Leite Condensado",
+    categoria: "Doces",
+    preco: 17.00,
+    observacao: "Bolo gelado de coco com uma bola de sorvete de creme e 50ml de leite condensado"
+}   
+    
 ];
