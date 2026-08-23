@@ -282,5 +282,85 @@ body {
         width: 100%;
         justify-self: stretch;
     }
+}
 
+/* =========================
+   HORÁRIOS DO CAFÉ DA MANHÃ
+========================= */
+
+.destaque {
+    text-align: center;
+    padding: 25px 20px 10px;
+}
+
+.destaque h2 {
+    margin: 0 0 18px;
+    font-family: 'Playfair Display', serif;
+    color: #C58A00;
+    font-size: 26px;
+}
+
+.horarios-cafe {
+    max-width: 650px;
+    margin: 0 auto;
+
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.horario {
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px 12px;
+
+    box-shadow: 0 5px 15px rgba(0,0,0,.08);
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.horario strong {
+    color: #C58A00;
+    font-size: 15px;
+}
+
+.horario span {
+    color: #333;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.mensagem-estadia {
+    margin: 20px auto 0;
+    font-size: 16px !important;
+    color: #5A3A00;
+}
+
+
+/* CELULAR */
+
+@media (max-width: 500px) {
+
+    .horarios-cafe {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .horario {
+        padding: 14px 8px;
+    }
+
+    .horario strong {
+        font-size: 13px;
+    }
+
+    .horario span {
+        font-size: 15px;
+    }
+
+    .destaque h2 {
+        font-size: 23px;
+    }
 }
