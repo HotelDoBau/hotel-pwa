@@ -645,54 +645,63 @@ const produtos = [
     categoria: "Vinhos e Destilados",
     preco: 17.00
 },
+    
 {
     id: 87,
     nome: "Cachaça Premium - dose 50ml",
     categoria: "Vinhos e Destilados",
     preco: 22.00
 },
+    
 {
     id: 88,
     nome: "Licores - dose 50ml",
     categoria: "Vinhos e Destilados",
     preco: 32.00
 },
+    
 {
     id: 89,
     nome: "Whisky - dose 50ml",
     categoria: "Vinhos e Destilados",
     preco: 35.00
 },
+    
 {
     id: 90,
     nome: "Gin - dose 50ml",
     categoria: "Vinhos e Destilados",
     preco: 23.00
 },
+    
 {
     id: 91,
     nome: "Tequila - dose 50ml",
     categoria: "Vinhos e Destilados",
     preco: 18.00
 },
+    
 {
     id: 92,
     nome: "Vermute - dose 50ml",
     categoria: "Vinhos e Destilados",
     preco: 19.00
 },
+    
 {
     id: 93,
     nome: "Vodca - dose 50ml",
     categoria: "Vinhos e Destilados",
     preco: 23.00
 },
+    
 {
     id: 94,
     nome: "Vinho - dose 50ml",
     categoria: "Vinhos e Destilados",
     preco: 19.00
 },
+    
 {
     id: 95,
     nome: "Laranjinha - Aperol Spritz",
@@ -700,6 +709,7 @@ const produtos = [
     preco: 33.00,
     observacao: "Vinho branco (1 taça) + Aperol (dose)"
 },
+    
 {
     id: 96,
     nome: "Mayra Amou - Lemmon Spritz",
@@ -707,6 +717,7 @@ const produtos = [
     preco: 35.00,
     observacao: "Vinho branco (1 taça) + Limoncello (dose)"
 },
+    
 {
     id: 97,
     nome: "Gente Fina - Pennicilim",
@@ -714,6 +725,7 @@ const produtos = [
     preco: 31.00,
     observacao: "Whisky + Mel + Gengibre"
 },
+    
 {
     id: 98,
     nome: "Coice de Mula - Moscow Mule",
@@ -721,6 +733,7 @@ const produtos = [
     preco: 34.00,
     observacao: "Vodca + Limão + Ginger Beer + Espuma"
 },
+    
 {
     id: 99,
     nome: "Seu Geraldo - Fitzgerald",
