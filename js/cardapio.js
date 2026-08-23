@@ -106,7 +106,8 @@ const icones = {
             <path d="M12 7V3"></path>
             <path d="M16 7l-1-4"></path>
         </svg>
-    `
+    `,
+    
     "Drinks": `
     <svg viewBox="0 0 24 24">
         <path d="M5 4h14"></path>
