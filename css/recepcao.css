@@ -151,3 +151,8 @@ footer a {
 
     z-index: 2;
 }
+/* OCULTAR ÁREA INTERNA DA RECEPÇÃO */
+
+.card-oculto {
+    display: none;
+}
