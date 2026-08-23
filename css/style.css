@@ -259,3 +259,28 @@ body {
     width: calc(50% - 9px);
     justify-self: center;
 }
+/* =========================
+   MENU EM LISTA NO CELULAR
+========================= */
+
+@media (max-width: 700px) {
+
+    .menu {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        padding: 20px;
+    }
+
+    .opcao {
+        width: 100%;
+        min-height: 180px;
+        height: auto;
+    }
+
+    .menu .opcao:last-child {
+        grid-column: auto;
+        width: 100%;
+        justify-self: stretch;
+    }
+
+}
