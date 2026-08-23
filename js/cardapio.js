@@ -142,6 +142,20 @@ const icones = {
         <path d="M8 12h8"></path>
     </svg>
 `,
+
+    "Sucos": `
+    <svg viewBox="0 0 24 24">
+        <path d="M7 5h10l-1 16H8z"></path>
+        <path d="M9 9h6"></path>
+        <path d="M14 5l3-3"></path>
+    </svg>
+`,
+
+"Energéticos": `
+    <svg viewBox="0 0 24 24">
+        <path d="M13 2L6 13h6l-1 9 7-12h-6z"></path>
+    </svg>
+`,
     
 };
 
