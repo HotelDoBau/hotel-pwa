@@ -693,3 +693,38 @@ const produtos = [
     categoria: "Vinhos e Destilados",
     preco: 19.00
 }
+{
+    id: 95,
+    nome: "Laranjinha - Aperol Spritz",
+    categoria: "Drinks",
+    preco: 33.00,
+    observacao: "Vinho branco (1 taça) + Aperol (dose)"
+},
+{
+    id: 96,
+    nome: "Mayra Amou - Lemmon Spritz",
+    categoria: "Drinks",
+    preco: 35.00,
+    observacao: "Vinho branco (1 taça) + Limoncello (dose)"
+},
+{
+    id: 97,
+    nome: "Gente Fina - Pennicilim",
+    categoria: "Drinks",
+    preco: 31.00,
+    observacao: "Whisky + Mel + Gengibre"
+},
+{
+    id: 98,
+    nome: "Coice de Mula - Moscow Mule",
+    categoria: "Drinks",
+    preco: 34.00,
+    observacao: "Vodca + Limão + Ginger Beer + Espuma"
+},
+{
+    id: 99,
+    nome: "Seu Geraldo - Fitzgerald",
+    categoria: "Drinks",
+    preco: 32.00,
+    observacao: "Gin + Limão + Xarope + Angostura"
+}
