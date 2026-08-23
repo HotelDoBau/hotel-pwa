@@ -33,13 +33,22 @@ const icones = {
         </svg>
     `,
 
-    "Cervejas e Vinhos": `
-        <svg viewBox="0 0 24 24">
-            <path d="M7 3h10v5a5 5 0 0 1-10 0z"></path>
-            <path d="M12 13v6"></path>
-            <path d="M8 21h8"></path>
-        </svg>
-    `,
+  "Cervejas": `
+    <svg viewBox="0 0 24 24">
+        <path d="M5 5h10v14H5z"></path>
+        <path d="M15 8h2a3 3 0 0 1 0 6h-2"></path>
+        <path d="M7 8h6"></path>
+        <path d="M8 3h4"></path>
+    </svg>
+`,
+
+"Vinhos e Destilados": `
+    <svg viewBox="0 0 24 24">
+        <path d="M7 3h10v5a5 5 0 0 1-10 0z"></path>
+        <path d="M12 13v6"></path>
+        <path d="M8 21h8"></path>
+    </svg>
+`,
 
     "Salgados": `
         <svg viewBox="0 0 24 24">
