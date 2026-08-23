@@ -16,15 +16,88 @@ const busca = document.getElementById("buscar");
 
 const icones = {
 
-    "Cafeteria": "☕",
-    "Bebidas": "🥤",
-    "Cervejas e Vinhos": "🍺",
-    "Salgados": "🥟",
-    "Lanches": "🍔",
-    "Pratos Feitos": "🍛",
-    "Pratos feitos": "🍛",
-    "Doces": "🍰",
-    "Petiscos": "🍟"
+    "Cafeteria": `
+        <svg viewBox="0 0 24 24">
+            <path d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"></path>
+            <path d="M16 10h2a3 3 0 0 1 0 6h-2"></path>
+            <path d="M7 3c0 2 2 2 2 4"></path>
+            <path d="M11 3c0 2 2 2 2 4"></path>
+        </svg>
+    `,
+
+    "Bebidas": `
+        <svg viewBox="0 0 24 24">
+            <path d="M6 4h12l-1.5 16h-9z"></path>
+            <path d="M8 9h8"></path>
+            <path d="M14 4l2-2"></path>
+        </svg>
+    `,
+
+    "Cervejas e Vinhos": `
+        <svg viewBox="0 0 24 24">
+            <path d="M7 3h10v5a5 5 0 0 1-10 0z"></path>
+            <path d="M12 13v6"></path>
+            <path d="M8 21h8"></path>
+        </svg>
+    `,
+
+    "Salgados": `
+        <svg viewBox="0 0 24 24">
+            <path d="M4 15c2-6 6-9 8-9s6 3 8 9"></path>
+            <path d="M4 15c3 4 13 4 16 0"></path>
+            <path d="M8 12h.01"></path>
+            <path d="M12 10h.01"></path>
+            <path d="M16 12h.01"></path>
+        </svg>
+    `,
+
+    "Lanches": `
+        <svg viewBox="0 0 24 24">
+            <path d="M4 10c1-4 4-6 8-6s7 2 8 6z"></path>
+            <path d="M3 13h18"></path>
+            <path d="M5 17h14"></path>
+            <path d="M4 20h16"></path>
+        </svg>
+    `,
+
+    "Pratos Feitos": `
+        <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="8"></circle>
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M3 4v7"></path>
+            <path d="M1.5 4v4"></path>
+            <path d="M4.5 4v4"></path>
+            <path d="M21 4v16"></path>
+        </svg>
+    `,
+
+    "Pratos feitos": `
+        <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="8"></circle>
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M3 4v7"></path>
+            <path d="M1.5 4v4"></path>
+            <path d="M4.5 4v4"></path>
+            <path d="M21 4v16"></path>
+        </svg>
+    `,
+
+    "Doces": `
+        <svg viewBox="0 0 24 24">
+            <path d="M5 11h14l-2 9H7z"></path>
+            <path d="M6 11c1-4 3-6 6-6s5 2 6 6"></path>
+            <path d="M12 5V2"></path>
+        </svg>
+    `,
+
+    "Petiscos": `
+        <svg viewBox="0 0 24 24">
+            <path d="M6 7h12l-1 14H7z"></path>
+            <path d="M8 7l1-4"></path>
+            <path d="M12 7V3"></path>
+            <path d="M16 7l-1-4"></path>
+        </svg>
+    `
 
 };
 
@@ -99,7 +172,7 @@ function carregarCategorias(){
         card.innerHTML = `
 
             <span class="icone-categoria">
-                ${icones[categoria] || "🍽️"}
+                ${icones[categoria] || ""}
             </span>
 
             <strong>
@@ -177,8 +250,11 @@ function carregarProdutosCategoria(categoria){
 
         <h2>
 
-            ${icones[categoria] || "🍽️"}
-            ${categoria}
+          <span class="icone-titulo-categoria">
+    ${icones[categoria] || ""}
+</span>
+
+${categoria}
 
         </h2>
 
