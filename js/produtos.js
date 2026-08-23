@@ -637,7 +637,7 @@ const produtos = [
    categoria: "Cervejas",
     preco: 10.00,
     imagem: "img/amstel-lata.webp"
-}
+},
 
 {
     id: 86,
