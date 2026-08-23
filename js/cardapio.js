@@ -116,8 +116,33 @@ const icones = {
         <path d="M8 21h8"></path>
         <path d="M9 7h6"></path>
     </svg>
-`
+`,
+    
+"Omeletes": `
+    <svg viewBox="0 0 24 24">
+        <ellipse cx="12" cy="12" rx="9" ry="7"></ellipse>
+        <circle cx="12" cy="12" r="3"></circle>
+    </svg>
+`,
 
+"Sopas e Caldos": `
+    <svg viewBox="0 0 24 24">
+        <path d="M4 10h16"></path>
+        <path d="M5 10a7 7 0 0 0 14 0"></path>
+        <path d="M8 5c0 1 1 1 1 2"></path>
+        <path d="M12 4c0 1 1 1 1 2"></path>
+        <path d="M16 5c0 1 1 1 1 2"></path>
+    </svg>
+`,
+
+"Porções e Adicionais": `
+    <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 8v8"></path>
+        <path d="M8 12h8"></path>
+    </svg>
+`,
+    
 };
 
 
