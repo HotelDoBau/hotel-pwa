@@ -429,7 +429,7 @@ const produtos = [
 {
     id: 60,
     nome: "Suco Nativo Frutas Cítricas",
-    categoria: "Bebidas",
+    categoria: "Sucos",
     preco: 4.00,
     imagem: "img/suco-nativo-frutas-citricas.webp"
 },
@@ -437,7 +437,7 @@ const produtos = [
 {
     id: 61,
     nome: "Suco Nativo Uva",
-    categoria: "Bebidas",
+    categoria: "Sucos",
     preco: 4.00,
     imagem: "img/suco-nativo-uva.webp"
 },
@@ -445,7 +445,7 @@ const produtos = [
 {
     id: 62,
     nome: "Suco Nativo Laranja com Acerola",
-    categoria: "Bebidas",
+    categoria: "Sucos",
     preco: 4.00,
     imagem: "img/suco-nativo-laranja-acerola.webp"
 },
@@ -517,7 +517,7 @@ const produtos = [
 {
     id: 71,
     nome: "Energético Monster Mango Loco 473ml",
-    categoria: "Bebidas",
+    categoria: "Energéticos",
     preco: 13.00,
     imagem: "img/monster-mango-loco.webp"
 },
@@ -525,7 +525,7 @@ const produtos = [
 {
     id: 72,
     nome: "Energético Monster Tradicional 473ml",
-    categoria: "Bebidas",
+    categoria: "Energéticos",
     preco: 13.00,
     imagem: "img/monster-tradicional.webp"
 },
