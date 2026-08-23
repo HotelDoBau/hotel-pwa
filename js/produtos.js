@@ -594,7 +594,7 @@ const produtos = [
 {
     id: 80,
     nome: "Heineken 600ml",
-    categoria: "Cervejas e Vinhos",
+    categoria: "Cervejas",
     preco: 18.00,
     imagem: "img/heineken-600ml.webp"
 },
@@ -602,7 +602,7 @@ const produtos = [
 {
     id: 81,
     nome: "Amstel 600ml",
-    categoria: "Cervejas e Vinhos",
+    categoria: "Cervejas",
     preco: 16.00,
     imagem: "img/amstel-600ml.webp"
 },
@@ -610,7 +610,7 @@ const produtos = [
 {
     id: 82,
     nome: "Original 600ml",
-    categoria: "Cervejas e Vinhos",
+    categoria: "Cervejas",
     preco: 16.00,
     imagem: "img/original-600ml.webp"
 },
@@ -618,7 +618,7 @@ const produtos = [
 {
     id: 83,
     nome: "Vinho Lunae garrafa",
-    categoria: "Cervejas e Vinhos",
+    categoria: "Vinhos e Destilados",
     preco: 55.00,
     imagem: "img/vinho-lunae.webp"
 },
@@ -626,7 +626,7 @@ const produtos = [
 {
     id: 84,
     nome: "Heineken lata",
-    categoria: "Cervejas e Vinhos",
+    categoria: "Cervejas",
     preco: 10.00,
     imagem: "img/heineken-lata.webp"
 },
@@ -634,7 +634,7 @@ const produtos = [
 {
     id: 85,
     nome: "Amstel lata",
-    categoria: "Cervejas e Vinhos",
+   categoria: "Cervejas",
     preco: 10.00,
     imagem: "img/amstel-lata.webp"
 }
