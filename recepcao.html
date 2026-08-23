@@ -13,15 +13,12 @@
 
 </head>
 
-
 <body>
 
 
 <header class="topo-recepcao">
 
-    <button
-        class="voltar"
-        onclick="history.back()">
+    <button onclick="history.back()" class="voltar">
         ← Voltar
     </button>
 
@@ -36,15 +33,20 @@
 
     <div class="card">
 
-        <div class="icone">
-            🛎️
+        <div class="icone-recepcao">
+            <svg viewBox="0 0 24 24">
+                <path d="M5 18h14"></path>
+                <path d="M7 18v-2a5 5 0 0 1 10 0v2"></path>
+                <path d="M12 11V8"></path>
+                <circle cx="12" cy="6" r="1"></circle>
+                <path d="M4 20h16"></path>
+            </svg>
         </div>
 
         <h2>Atendimento</h2>
 
         <p>
-            Nossa equipe está pronta para atender
-            suas solicitações durante sua hospedagem.
+            Solicitações e dúvidas? Chame no WhatsApp do Hotel
         </p>
 
     </div>
@@ -55,22 +57,24 @@
 
     <div class="card">
 
-        <div class="icone">
-            📞
+        <div class="icone-recepcao">
+            <svg viewBox="0 0 24 24">
+                <path d="M6 3h4l2 5-3 2a15 15 0 0 0 5 5l2-3 5 2v4c0 2-2 3-4 3C9 20 4 15 3 7c0-2 1-4 3-4z"></path>
+            </svg>
         </div>
 
         <h2>Contato</h2>
 
         <p>
-            Entre em contato com a recepção para
-            dúvidas, informações ou pedidos.
+            Entre em contato
+            diretamente com a recepção.
         </p>
 
-        <a href="tel:+5516991180878"
-           class="botao telefone">
-
-            📞 Ligar para a recepção
-
+        <a
+            href="tel:+5516991180878"
+            class="botao telefone"
+        >
+            Ligar para a recepção
         </a>
 
     </div>
@@ -81,15 +85,18 @@
 
     <div class="card">
 
-        <div class="icone">
-            🕒
+        <div class="icone-recepcao">
+            <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M12 7v5l3 2"></path>
+            </svg>
         </div>
 
         <h2>Horário de atendimento</h2>
 
         <p>
-            Atendimento disponível para proporcionar
-            uma melhor experiência aos hóspedes.
+            Nossa recepção está disponível 24 horas
+            para atender nossos hóspedes.
         </p>
 
     </div>
@@ -100,33 +107,37 @@
 
     <div class="card">
 
-        <div class="icone">
-            💬
+        <div class="icone-recepcao">
+            <svg viewBox="0 0 24 24">
+                <path d="M20 11.5a8 8 0 0 1-9 8L5 21l1.5-4A8 8 0 1 1 20 11.5z"></path>
+                <path d="M9 10h.01"></path>
+                <path d="M12 10h.01"></path>
+                <path d="M15 10h.01"></path>
+            </svg>
         </div>
 
         <h2>WhatsApp</h2>
 
         <p>
-            Fale diretamente com a recepção
-            pelo WhatsApp.
+            Fale com a recepção pelo WhatsApp
+            de forma rápida e prática.
         </p>
 
         <a
             href="https://wa.me/5516991180878?text=Olá,%20gostaria%20de%20falar%20com%20a%20recepção%20do%20Hotel%20do%20Baú"
             target="_blank"
-            class="botao whatsapp">
-
-            📱 Chamar no WhatsApp
-
+            class="botao whatsapp"
+        >
+            Chamar no WhatsApp
         </a>
 
     </div>
 
 
+    <!--
+    ÁREA DA RECEPÇÃO OCULTA
 
-    <!-- ÁREA RESTRITA -->
-
-   <div class="card area-restrita card-oculto">
+    <div class="card area-restrita">
 
         <div class="icone">
             🔐
@@ -141,13 +152,13 @@
 
         <button
             onclick="acessarPedidos()"
-            class="botao pedidos">
-
-            🖨️ Acessar Pedidos
-
+            class="botao pedidos"
+        >
+            Acessar Pedidos
         </button>
 
     </div>
+    -->
 
 
 </main>
@@ -161,7 +172,7 @@
     </p>
 
     <a href="index.html">
-        ⬅ Voltar ao início
+        ← Voltar ao início
     </a>
 
 </footer>
@@ -173,7 +184,7 @@
 function acessarPedidos() {
 
     const senha =
-        prompt("🔐 Digite a senha da recepção:");
+        prompt("Digite a senha da recepção:");
 
     if (senha === "hotel2026") {
 
@@ -183,7 +194,7 @@ function acessarPedidos() {
 
     else if (senha !== null) {
 
-        alert("❌ Senha incorreta.");
+        alert("Senha incorreta.");
 
     }
 
