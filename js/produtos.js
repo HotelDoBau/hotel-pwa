@@ -692,7 +692,7 @@ const produtos = [
     nome: "Vinho - dose 50ml",
     categoria: "Vinhos e Destilados",
     preco: 19.00
-}
+},
 {
     id: 95,
     nome: "Laranjinha - Aperol Spritz",
