@@ -639,4 +639,57 @@ const produtos = [
     imagem: "img/amstel-lata.webp"
 }
 
-];
+{
+    id: 86,
+    nome: "Cachaça - dose 50ml",
+    categoria: "Vinhos e Destilados",
+    preco: 17.00
+},
+{
+    id: 87,
+    nome: "Cachaça Premium - dose 50ml",
+    categoria: "Vinhos e Destilados",
+    preco: 22.00
+},
+{
+    id: 88,
+    nome: "Licores - dose 50ml",
+    categoria: "Vinhos e Destilados",
+    preco: 32.00
+},
+{
+    id: 89,
+    nome: "Whisky - dose 50ml",
+    categoria: "Vinhos e Destilados",
+    preco: 35.00
+},
+{
+    id: 90,
+    nome: "Gin - dose 50ml",
+    categoria: "Vinhos e Destilados",
+    preco: 23.00
+},
+{
+    id: 91,
+    nome: "Tequila - dose 50ml",
+    categoria: "Vinhos e Destilados",
+    preco: 18.00
+},
+{
+    id: 92,
+    nome: "Vermute - dose 50ml",
+    categoria: "Vinhos e Destilados",
+    preco: 19.00
+},
+{
+    id: 93,
+    nome: "Vodca - dose 50ml",
+    categoria: "Vinhos e Destilados",
+    preco: 23.00
+},
+{
+    id: 94,
+    nome: "Vinho - dose 50ml",
+    categoria: "Vinhos e Destilados",
+    preco: 19.00
+}
