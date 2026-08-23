@@ -297,7 +297,7 @@ const produtos = [
     {
         id: 44,
         nome: "Porção Extra de Arroz",
-        categoria: "Pratos Feitos",
+        categoria: "Porções e Adicionais",
         preco: 8.00,
         imagem: "img/porcao-arroz.webp"
     },
@@ -305,7 +305,7 @@ const produtos = [
     {
         id: 45,
         nome: "Porção Extra de Feijão",
-        categoria: "Pratos Feitos",
+        categoria: "Porções e Adicionais",
         preco: 8.00,
         imagem: "img/porcao-feijao.webp"
     },
@@ -313,7 +313,7 @@ const produtos = [
     {
         id: 46,
         nome: "Porção de Ragú/Lagarto",
-        categoria: "Pratos Feitos",
+        categoria: "Porções e Adicionais",
         preco: 10.00,
         imagem: "img/porcao-ragu.webp"
     },
@@ -321,7 +321,7 @@ const produtos = [
     {
         id: 47,
         nome: "Omelete Simples",
-        categoria: "Pratos Feitos",
+        categoria: "Omeletes",
         preco: 10.00,
         imagem: "img/omelete-simples.webp"
     },
@@ -329,7 +329,7 @@ const produtos = [
     {
         id: 48,
         nome: "Omelete Super",
-        categoria: "Pratos Feitos",
+        categoria: "Omeletes",
         preco: 22.00,
         imagem: "img/omelete-super.webp"
     },
@@ -337,7 +337,7 @@ const produtos = [
     {
         id: 49,
         nome: "Adicional de Ovo",
-        categoria: "Pratos Feitos",
+        categoria: "Porções e Adicionais",
         preco: 1.70,
         imagem: "img/adicional-ovo.webp"
     },
@@ -345,7 +345,7 @@ const produtos = [
     {
         id: 50,
         nome: "Adicional de Tomate",
-        categoria: "Pratos Feitos",
+        categoria: "Porções e Adicionais",
         preco: 0.80,
         imagem: "img/adicional-tomate.webp"
     },
@@ -353,7 +353,7 @@ const produtos = [
     {
         id: 51,
         nome: "Adicional de Cebola",
-        categoria: "Pratos Feitos",
+        categoria: "Porções e Adicionais",
         preco: 0.90,
         imagem: "img/adicional-cebola.webp"
     },
@@ -361,7 +361,7 @@ const produtos = [
     {
         id: 52,
         nome: "Adicional de Queijo Mussarela",
-        categoria: "Pratos Feitos",
+        categoria: "Porções e Adicionais",
         preco: 1.50,
         imagem: "img/adicional-mussarela.webp"
     },
@@ -369,7 +369,7 @@ const produtos = [
     {
         id: 53,
         nome: "Caldo de Carne",
-        categoria: "Pratos Feitos",
+        categoria: "Sopas e Caldos",
         preco: 21.90,
         imagem: "img/caldo-carne.webp"
     },
@@ -377,7 +377,7 @@ const produtos = [
     {
         id: 54,
         nome: "Canja",
-        categoria: "Pratos Feitos",
+        categoria: "Sopas e Caldos",
         preco: 19.90,
         imagem: "img/canja.webp"
     },
