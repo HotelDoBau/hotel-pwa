@@ -143,3 +143,10 @@ footer a{
 
     font-weight:600;
 }
+/* DESCRIÇÃO DOS CARDS */
+
+.descricao-academia {
+    text-align: center;
+    width: 100%;
+    margin: 10px 0 20px;
+}
