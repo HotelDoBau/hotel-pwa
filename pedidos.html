@@ -852,10 +852,6 @@ ${pedido.quarto
 
 }
 
-// =====================================================
-// IMPRESSÃO - FECHAMENTO DE MESA
-// =====================================================
-
 async function imprimirFechamento(fechamento) {
 
     if (!fechamento?.id) return;
@@ -878,13 +874,12 @@ async function imprimirFechamento(fechamento) {
 
     itens.forEach(item => {
 
-        const subtotal =
+        const subtotalItem =
             Number(item.preco || 0) *
             Number(item.quantidade || 0);
 
 
         itensHTML += `
-
             <div class="linha-item-impressao">
 
                 <span>
@@ -893,15 +888,69 @@ async function imprimirFechamento(fechamento) {
                 </span>
 
                 <span>
-                    ${dinheiro(subtotal)}
+                    ${dinheiro(subtotalItem)}
                 </span>
 
             </div>
-
         `;
 
     });
 
+
+    // ==========================================
+    // VALORES DO FECHAMENTO
+    // ==========================================
+
+    const subtotal =
+        Number(
+            fechamento.subtotal ??
+            fechamento.total ??
+            0
+        );
+
+    const desconto =
+        Number(
+            fechamento.desconto ??
+            0
+        );
+
+    const total =
+        Number(
+            fechamento.total ??
+            (subtotal - desconto)
+        );
+
+
+    // ==========================================
+    // IDENTIFICAÇÃO MESA / QUARTO
+    // ==========================================
+
+    let identificacao = "";
+
+    if (fechamento.quarto) {
+
+        identificacao = `
+            <p class="identificacao-print">
+                QUARTO
+                ${escaparHTML(String(fechamento.quarto))}
+            </p>
+        `;
+
+    } else {
+
+        identificacao = `
+            <p class="identificacao-print mesa-print">
+                MESA
+                ${String(fechamento.mesa || "").padStart(2, "0")}
+            </p>
+        `;
+
+    }
+
+
+    // ==========================================
+    // IMPRESSÃO
+    // ==========================================
 
     abrirImpressao(
 
@@ -912,36 +961,70 @@ async function imprimirFechamento(fechamento) {
 
         <div class="separador"></div>
 
-        <p class="identificacao-print mesa-print">
-    MESA
-    ${String(fechamento.mesa || "").padStart(2, "0")}
-</p>
 
-${fechamento.quarto
-    ? `
-        <p class="identificacao-print">
-            QUARTO ${escaparHTML(fechamento.quarto)}
+        ${identificacao}
+
+
+        <p class="central">
+            ${escaparHTML(fechamento.dataHora || "")}
         </p>
-      `
-    : ""
-}
 
-<p class="central">
-    ${escaparHTML(fechamento.dataHora || "")}
-</p>
 
         <div class="separador"></div>
+
 
         ${itensHTML}
 
+
         <div class="separador"></div>
+
 
         <div class="total-impressao">
-            <span>TOTAL</span>
-            <span>${dinheiro(fechamento.total)}</span>
+
+            <span>CONSUMO</span>
+
+            <span>
+                ${dinheiro(subtotal)}
+            </span>
+
         </div>
 
+
+        ${
+            desconto > 0
+                ? `
+                    <div class="total-impressao">
+
+                        <span>DESCONTO</span>
+
+                        <span>
+                            - ${dinheiro(desconto)}
+                        </span>
+
+                    </div>
+                `
+                : ""
+        }
+
+
         <div class="separador"></div>
+
+
+        <div class="total-impressao">
+
+            <span>
+                TOTAL A PAGAR
+            </span>
+
+            <span>
+                ${dinheiro(total)}
+            </span>
+
+        </div>
+
+
+        <div class="separador"></div>
+
 
         <p class="central">
             Hotel do Baú
@@ -949,6 +1032,7 @@ ${fechamento.quarto
             Obrigado!
         </p>
         `,
+
 
         async function () {
 
@@ -963,7 +1047,10 @@ ${fechamento.quarto
                     );
 
 
-                // Apaga todos os pedidos acumulados da mesa.
+                // ==========================================
+                // APAGA OS PEDIDOS ACUMULADOS
+                // ==========================================
+
                 const referenciaPedidos =
                     collection(
                         dbGarcom,
@@ -985,6 +1072,7 @@ ${fechamento.quarto
                 snapshotPedidos.forEach(documento => {
 
                     exclusoes.push(
+
                         deleteDoc(
                             doc(
                                 dbGarcom,
@@ -994,6 +1082,7 @@ ${fechamento.quarto
                                 documento.id
                             )
                         )
+
                     );
 
                 });
@@ -1002,31 +1091,43 @@ ${fechamento.quarto
                 await Promise.all(exclusoes);
 
 
-                // Só depois da impressão a mesa volta a ficar livre.
+                // ==========================================
+                // LIBERA A MESA
+                // ==========================================
+
                 await setDoc(
+
                     doc(
                         dbGarcom,
                         "mesas",
                         idMesa
                     ),
+
                     {
                         numero: Number(fechamento.mesa),
                         status: "livre",
                         atualizadoEm: serverTimestamp()
                     },
+
                     {
                         merge: true
                     }
+
                 );
 
 
-                // Retira o fechamento da fila.
+                // ==========================================
+                // REMOVE O FECHAMENTO DA FILA
+                // ==========================================
+
                 await deleteDoc(
+
                     doc(
                         dbGarcom,
                         "fechamentos",
                         fechamento.id
                     )
+
                 );
 
             }
@@ -1061,7 +1162,6 @@ ${fechamento.quarto
     );
 
 }
-
 
 // =====================================================
 // JANELA DE IMPRESSÃO 80MM
