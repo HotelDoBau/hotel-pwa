@@ -336,6 +336,68 @@ const impressoesAutomaticasEmAndamento =
 
 const TEMPO_TRAVA_IMPRESSAO = 30000;
 
+    /* =========================================
+   GERAR NÚMERO DA COMANDA
+========================================= */
+
+async function gerarNumeroComanda() {
+
+    const referencia =
+        doc(
+            dbGarcom,
+            "configuracoes",
+            "comanda"
+        );
+
+    const proximoNumero =
+        await runTransaction(
+            dbGarcom,
+            async transaction => {
+
+                const snapshot =
+                    await transaction.get(
+                        referencia
+                    );
+
+                let ultimoNumero = 0;
+
+                if (snapshot.exists()) {
+
+                    ultimoNumero =
+                        Number(
+                            snapshot.data().ultimoNumero || 0
+                        );
+
+                }
+
+                const novoNumero =
+                    ultimoNumero + 1;
+
+                transaction.set(
+                    referencia,
+                    {
+                        ultimoNumero:
+                            novoNumero,
+
+                        atualizadoEm:
+                            serverTimestamp()
+                    },
+                    {
+                        merge: true
+                    }
+                );
+
+                return novoNumero;
+
+            }
+        );
+
+    return String(
+        proximoNumero
+    ).padStart(4, "0");
+
+}
+
 function adquirirTravaImpressao(chave) {
 
     const agora = Date.now();
