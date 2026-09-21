@@ -334,6 +334,79 @@ const fechamentosEmAndamento =
 const impressoesAutomaticasEmAndamento =
     new Set();
 
+const TEMPO_TRAVA_IMPRESSAO = 30000;
+
+function adquirirTravaImpressao(chave) {
+
+    const agora = Date.now();
+
+    try {
+
+        const existente =
+            localStorage.getItem(
+                "hotelBau_impressao_" + chave
+            );
+
+        if (existente) {
+
+            const tempo =
+                Number(existente);
+
+            if (
+                agora - tempo <
+                TEMPO_TRAVA_IMPRESSAO
+            ) {
+
+                return false;
+
+            }
+
+        }
+
+        localStorage.setItem(
+            "hotelBau_impressao_" + chave,
+            String(agora)
+        );
+
+        return true;
+
+    }
+
+    catch (erro) {
+
+        console.error(
+            "Erro ao criar trava de impressão:",
+            erro
+        );
+
+        return true;
+
+    }
+
+}
+
+
+function liberarTravaImpressao(chave) {
+
+    try {
+
+        localStorage.removeItem(
+            "hotelBau_impressao_" + chave
+        );
+
+    }
+
+    catch (erro) {
+
+        console.error(
+            "Erro ao liberar trava:",
+            erro
+        );
+
+    }
+
+}
+
 
 // =====================================================
 // UTILIDADES
@@ -622,10 +695,12 @@ async function imprimirPedidoAutomaticamente(
         return;
     }
 
-
     const chave =
         `${origem}:${pedido.id}`;
 
+    // ==========================================
+    // PRIMEIRA TRAVA — ESTA PÁGINA
+    // ==========================================
 
     if (
         impressoesAutomaticasEmAndamento.has(
@@ -637,11 +712,26 @@ async function imprimirPedidoAutomaticamente(
 
     }
 
+    // ==========================================
+    // SEGUNDA TRAVA — TODAS AS ABAS/JANELAS
+    // ==========================================
+
+    if (
+        !adquirirTravaImpressao(chave)
+    ) {
+
+        console.log(
+            "Impressão já está sendo processada:",
+            chave
+        );
+
+        return;
+
+    }
 
     impressoesAutomaticasEmAndamento.add(
         chave
     );
-
 
     try {
 
@@ -662,26 +752,27 @@ async function imprimirPedidoAutomaticamente(
 
         }
 
-
         // ==========================================
         // GARÇOM
         // ==========================================
 
-        // PRIMEIRA IMPRESSÃO:
-        // SOMENTE O PEDIDO NOVO
-        // PARA PRODUÇÃO.
+        console.log(
+            "Iniciando impressão do consumo:",
+            pedido
+        );
 
-        await imprimirGarcom(
+        // PRIMEIRO:
+        // CONSUMO COMPLETO ACUMULADO
+
+        await imprimirConsumoMesa(
             pedido,
             true
         );
 
+        // DEPOIS:
+        // SOMENTE O PEDIDO NOVO PARA PRODUÇÃO
 
-        // SEGUNDA IMPRESSÃO:
-        // TODO O CONSUMO ACUMULADO
-        // DA MESA / QUARTO.
-
-        await imprimirConsumoMesa(
+        await imprimirGarcom(
             pedido,
             true
         );
@@ -695,6 +786,14 @@ async function imprimirPedidoAutomaticamente(
             erro
         );
 
+        alert(
+            "⚠️ Erro durante a impressão automática.\n\n" +
+            (
+                erro.message ||
+                erro
+            )
+        );
+
     }
 
     finally {
@@ -702,6 +801,8 @@ async function imprimirPedidoAutomaticamente(
         impressoesAutomaticasEmAndamento.delete(
             chave
         );
+
+        liberarTravaImpressao(chave);
 
     }
 
@@ -1728,591 +1829,291 @@ async function imprimirConsumoMesa(
         return;
     }
 
+    try {
 
-    const tipo =
-        pedido.tipo || "mesa";
+        const tipo =
+            pedido.tipo || "mesa";
 
+        const numero =
+            pedido.numero ||
+            pedido.mesa ||
+            pedido.quarto;
 
-    const numero =
-        pedido.numero ||
-        pedido.mesa ||
-        pedido.quarto;
+        if (!numero) {
 
+            throw new Error(
+                "O pedido não possui número de mesa ou quarto."
+            );
 
-    if (!numero) {
+        }
 
-        console.warn(
-            "Pedido sem mesa/quarto. Consumo não será impresso."
-        );
+        // ==========================================
+        // IDENTIFICADOR DA MESA / QUARTO
+        // ==========================================
 
-        return;
+        const idMesa =
+            tipo === "quarto"
 
-    }
+                ? "quarto_" +
+                  String(numero).padStart(
+                      2,
+                      "0"
+                  )
 
+                : "mesa_" +
+                  String(numero).padStart(
+                      2,
+                      "0"
+                  );
 
-    // ==========================================
-    // IDENTIFICADOR DA MESA / QUARTO
-    // ==========================================
-
-    const idMesa =
-        tipo === "quarto"
-
-            ? "quarto_" +
-              String(numero).padStart(
-                  2,
-                  "0"
-              )
-
-            : "mesa_" +
-              String(numero).padStart(
-                  2,
-                  "0"
-              );
-
-
-    // ==========================================
-    // BUSCA TODO O CONSUMO ACUMULADO
-    // ==========================================
-
-    const referenciaPedidos =
-        collection(
-
-            dbGarcom,
-
-            "mesas",
-
-            idMesa,
-
-            "pedidos"
-
-        );
-
-
-    const snapshot =
-        await getDocs(
-            referenciaPedidos
-        );
-
-
-    if (
-        snapshot.empty
-    ) {
-
-        console.warn(
-            "Nenhum consumo encontrado para:",
+        console.log(
+            "Buscando consumo acumulado:",
             idMesa
         );
 
-        return;
+        // ==========================================
+        // BUSCA TODOS OS PEDIDOS ACUMULADOS
+        // ==========================================
 
-    }
+        const referenciaPedidos =
+            collection(
+                dbGarcom,
+                "mesas",
+                idMesa,
+                "pedidos"
+            );
 
+        const snapshot =
+            await getDocs(
+                referenciaPedidos
+            );
 
-    const itensAcumulados = {};
+        if (
+            snapshot.empty
+        ) {
 
-    let total = 0;
-
-
-    // ==========================================
-    // ACUMULA TODOS OS PEDIDOS
-    // ==========================================
-
-    snapshot.forEach(
-        documento => {
-
-            const pedidoMesa =
-                documento.data();
-
-
-            const itens =
-                Array.isArray(
-                    pedidoMesa.itens
-                )
-                    ? pedidoMesa.itens
-                    : [];
-
-
-            itens.forEach(item => {
-
-                const quantidade =
-                    Number(
-                        item.quantidade || 0
-                    );
-
-
-                const preco =
-                    Number(
-                        item.preco || 0
-                    );
-
-
-                total +=
-                    preco *
-                    quantidade;
-
-
-                const chave =
-                    String(
-                        item.id
-                    );
-
-
-                if (
-                    !itensAcumulados[chave]
-                ) {
-
-                    itensAcumulados[chave] = {
-
-                        id:
-                            item.id,
-
-                        nome:
-                            item.nome,
-
-                        preco:
-                            preco,
-
-                        quantidade:
-                            0
-
-                    };
-
-                }
-
-
-                itensAcumulados[chave]
-                    .quantidade +=
-                    quantidade;
-
-            });
+            throw new Error(
+                "Nenhum pedido acumulado foi encontrado em " +
+                "mesas/" +
+                idMesa +
+                "/pedidos"
+            );
 
         }
-    );
 
+        const itensAcumulados = {};
 
-    // ==========================================
-    // MONTA A LISTA DOS ITENS
-    // ==========================================
+        let total = 0;
 
-    let itensHTML = "";
+        // ==========================================
+        // ACUMULA TODOS OS PEDIDOS
+        // ==========================================
 
+        snapshot.forEach(
+            documento => {
 
-    Object.values(
-        itensAcumulados
-    ).forEach(item => {
+                const pedidoMesa =
+                    documento.data();
 
-        const subtotal =
-            item.preco *
-            item.quantidade;
+                const itens =
+                    Array.isArray(
+                        pedidoMesa.itens
+                    )
+                        ? pedidoMesa.itens
+                        : [];
 
+                itens.forEach(item => {
 
-        itensHTML += `
+                    const quantidade =
+                        Number(
+                            item.quantidade || 0
+                        );
 
-            <div class="linha-item-impressao">
+                    const preco =
+                        Number(
+                            item.preco || 0
+                        );
+
+                    total +=
+                        preco *
+                        quantidade;
+
+                    const chave =
+                        String(
+                            item.id ??
+                            item.nome
+                        );
+
+                    if (
+                        !itensAcumulados[chave]
+                    ) {
+
+                        itensAcumulados[chave] = {
+
+                            id:
+                                item.id,
+
+                            nome:
+                                item.nome,
+
+                            preco:
+                                preco,
+
+                            quantidade:
+                                0
+
+                        };
+
+                    }
+
+                    itensAcumulados[chave]
+                        .quantidade +=
+                        quantidade;
+
+                });
+
+            }
+        );
+
+        // ==========================================
+        // MONTA OS ITENS
+        // ==========================================
+
+        let itensHTML = "";
+
+        Object.values(
+            itensAcumulados
+        ).forEach(item => {
+
+            const subtotal =
+                item.preco *
+                item.quantidade;
+
+            itensHTML += `
+
+                <div class="linha-item-impressao">
+
+                    <span>
+
+                        ${item.quantidade}x
+                        ${escaparHTML(
+                            item.nome
+                        )}
+
+                    </span>
+
+                    <strong>
+
+                        ${dinheiro(
+                            subtotal
+                        )}
+
+                    </strong>
+
+                </div>
+
+            `;
+
+        });
+
+        // ==========================================
+        // IDENTIFICAÇÃO
+        // ==========================================
+
+        const identificacao =
+            tipo === "quarto"
+
+                ? "QUARTO " +
+                  String(numero)
+
+                : "MESA " +
+                  String(numero).padStart(
+                      2,
+                      "0"
+                  );
+
+        // ==========================================
+        // CONSUMO ATUAL
+        // ==========================================
+
+        const conteudo = `
+
+            <h1>
+                HOTEL DO BAÚ
+            </h1>
+
+            <h2>
+                CONSUMO ATUAL
+            </h2>
+
+            <div class="separador"></div>
+
+            <div class="identificacao-print">
+
+                ${identificacao}
+
+            </div>
+
+            <div class="separador"></div>
+
+            ${itensHTML}
+
+            <div class="separador"></div>
+
+            <div class="total-impressao">
 
                 <span>
-
-                    ${item.quantidade}x
-
-                    ${escaparHTML(
-                        item.nome
-                    )}
-
+                    TOTAL
                 </span>
 
-
                 <strong>
-
-                    ${dinheiro(
-                        subtotal
-                    )}
-
+                    ${dinheiro(total)}
                 </strong>
 
             </div>
 
-        `;
+            <div class="separador"></div>
 
-    });
+            <p class="central">
 
+                CONTA PARCIAL
 
-    // ==========================================
-    // IDENTIFICAÇÃO
-    // ==========================================
+                <br>
 
-    const identificacao =
-        tipo === "quarto"
-
-            ? "QUARTO " +
-              String(numero)
-
-            : "MESA " +
-              String(numero).padStart(
-                  2,
-                  "0"
-              );
-
-
-    // ==========================================
-    // CONTEÚDO DA CONTA PARCIAL
-    // ==========================================
-
-    const conteudo = `
-
-        <h1>
-            HOTEL DO BAÚ
-        </h1>
-
-
-        <h2>
-            CONSUMO ATUAL
-        </h2>
-
-
-        <div class="separador"></div>
-
-
-        <div class="identificacao-print">
-
-            ${identificacao}
-
-        </div>
-
-
-        <div class="separador"></div>
-
-
-        ${itensHTML}
-
-
-        <div class="separador"></div>
-
-
-        <div class="total-impressao">
-
-            <span>
-                TOTAL
-            </span>
-
-
-            <strong>
-
-                ${dinheiro(total)}
-
-            </strong>
-
-        </div>
-
-
-        <div class="separador"></div>
-
-
-        <p class="central">
-
-            CONTA PARCIAL
-
-            <br>
-
-            MESA PERMANECE ABERTA
-
-        </p>
-
-    `;
-
-
-    // ==========================================
-    // UMA ÚNICA VIA DO CONSUMO
-    // ==========================================
-
-    await abrirImpressao(
-        conteudo,
-        async function () {}
-    );
-
-}
-
-
-// =====================================================
-// GERAR NÚMERO SEQUENCIAL DA COMANDA
-// =====================================================
-
-async function gerarNumeroComanda() {
-
-    const referenciaControle =
-        doc(
-            dbGarcom,
-            "controle",
-            "comanda"
-        );
-
-
-    return await runTransaction(
-
-        dbGarcom,
-
-        async transacao => {
-
-            const documento =
-                await transacao.get(
-                    referenciaControle
-                );
-
-
-            const ultimoNumero =
-                Number(
-
-                    documento.exists()
-
-                        ? documento.data()
-                            .ultimoNumero || 0
-
-                        : 0
-
-                );
-
-
-            const proximoNumero =
-                ultimoNumero + 1;
-
-
-            transacao.set(
-
-                referenciaControle,
-
-                {
-
-                    ultimoNumero:
-                        proximoNumero,
-
-                    atualizadoEm:
-                        serverTimestamp()
-
-                },
-
-                {
-                    merge: true
-                }
-
-            );
-
-
-            return String(
-                proximoNumero
-            ).padStart(
-                6,
-                "0"
-            );
-
-        }
-
-    );
-
-}
-
-
-// =====================================================
-// IMPRESSÃO - FECHAMENTO
-// =====================================================
-
-async function imprimirFechamento(
-    fechamento
-) {
-
-    if (!fechamento?.id) {
-        return;
-    }
-
-
-    if (
-        fechamentosEmAndamento.has(
-            fechamento.id
-        )
-    ) {
-
-        return;
-
-    }
-
-
-    fechamentosEmAndamento.add(
-        fechamento.id
-    );
-
-
-    const itens =
-        Array.isArray(
-            fechamento.itens
-        )
-            ? fechamento.itens
-            : [];
-
-
-    let itensHTML = "";
-
-
-    itens.forEach(item => {
-
-        const subtotalItem =
-            Number(
-                item.preco || 0
-            ) *
-            Number(
-                item.quantidade || 0
-            );
-
-
-        itensHTML += `
-
-            <div class="linha-item-impressao">
-
-                <span>
-
-                    ${Number(
-                        item.quantidade || 0
-                    )}x
-
-                    ${escaparHTML(
-                        item.nome || ""
-                    )}
-
-                </span>
-
-
-                <span>
-
-                    ${dinheiro(
-                        subtotalItem
-                    )}
-
-                </span>
-
-            </div>
-
-        `;
-
-    });
-
-
-    // ==========================================
-    // VALORES DO FECHAMENTO
-    // ==========================================
-
-    const subtotal =
-        Number(
-
-            fechamento.subtotal ??
-            fechamento.total ??
-            0
-
-        );
-
-
-    const desconto =
-        Number(
-            fechamento.desconto ??
-            0
-        );
-
-
-    const total =
-        Number(
-
-            fechamento.total ??
-            (
-                subtotal -
-                desconto
-            )
-
-        );
-
-
-    // ==========================================
-    // IDENTIFICAÇÃO
-    // ==========================================
-
-    let identificacao = "";
-
-
-    if (
-        fechamento.quarto
-    ) {
-
-        identificacao = `
-
-            <p class="identificacao-print">
-
-                QUARTO
-
-                ${escaparHTML(
-                    String(
-                        fechamento.quarto
-                    )
-                )}
+                MESA PERMANECE ABERTA
 
             </p>
 
         `;
 
-    }
+        console.log(
+            "Imprimindo consumo:",
+            idMesa,
+            total
+        );
 
-    else {
+        await abrirImpressao(
+            conteudo,
+            async function () {}
+        );
 
-        identificacao = `
-
-            <p class="identificacao-print mesa-print">
-
-                MESA
-
-                ${String(
-                    fechamento.mesa || ""
-                ).padStart(
-                    2,
-                    "0"
-                )}
-
-            </p>
-
-        `;
-
-    }
-
-
-    // ==========================================
-    // NÚMERO AUTOMÁTICO DA COMANDA
-    // ==========================================
-
-    let numeroComanda;
-
-
-    try {
-
-        numeroComanda =
-            await gerarNumeroComanda();
+        console.log(
+            "Consumo enviado para impressão:",
+            idMesa
+        );
 
     }
 
     catch (erro) {
 
         console.error(
-            "ERRO COMPLETO AO GERAR COMANDA:",
+            "ERRO AO IMPRIMIR CONSUMO:",
             erro
         );
 
-
         alert(
 
-            "ERRO AO GERAR COMANDA\n\n" +
-
-            "Código: " +
-
-            (
-                erro.code ||
-                "desconhecido"
-            ) +
-
-            "\n\n" +
-
-            "Mensagem: " +
+            "⚠️ NÃO FOI POSSÍVEL IMPRIMIR O CONSUMO.\n\n" +
 
             (
                 erro.message ||
@@ -2321,364 +2122,11 @@ async function imprimirFechamento(
 
         );
 
-
-        fechamentosEmAndamento.delete(
-            fechamento.id
-        );
-
-
-        return;
+        throw erro;
 
     }
 
-
-    // ==========================================
-    // IMPRESSÃO DO FECHAMENTO
-    // ==========================================
-
-    await abrirImpressao(
-
-        `
-
-        <h1>
-            HOTEL DO BAÚ
-        </h1>
-
-
-        <h2>
-            COMPROVANTE DE VENDA
-        </h2>
-
-
-        <p class="central">
-
-            MAR BBC HOTELARIA E TURISMO LTDA
-
-        </p>
-
-
-        <p class="central">
-
-            Rua Nove de Julho, 177<br>
-
-            Centro - Santa Rosa de Viterbo/SP<br>
-
-            CNPJ: 59.143.158/0001-63
-
-        </p>
-
-
-        <div class="separador"></div>
-
-
-        <p class="central">
-
-            <strong>
-
-                COMANDA Nº ${numeroComanda}
-
-            </strong>
-
-        </p>
-
-
-        <div class="separador"></div>
-
-
-        ${identificacao}
-
-
-        <p class="central">
-
-            ${escaparHTML(
-                fechamento.dataHora || ""
-            )}
-
-        </p>
-
-
-        <div class="separador"></div>
-
-
-        ${itensHTML}
-
-
-        <div class="separador"></div>
-
-
-        <div class="total-impressao">
-
-            <span>
-                CONSUMO
-            </span>
-
-
-            <span>
-
-                ${dinheiro(
-                    subtotal
-                )}
-
-            </span>
-
-        </div>
-
-
-        ${
-            desconto > 0
-
-                ? `
-
-                    <div class="total-impressao">
-
-                        <span>
-                            DESCONTO
-                        </span>
-
-                        <span>
-
-                            - ${dinheiro(
-                                desconto
-                            )}
-
-                        </span>
-
-                    </div>
-
-                  `
-
-                : ""
-
-        }
-
-
-        <div class="separador"></div>
-
-
-        <div class="total-impressao">
-
-            <span>
-                TOTAL A PAGAR
-            </span>
-
-
-            <span>
-
-                ${dinheiro(
-                    total
-                )}
-
-            </span>
-
-        </div>
-
-
-        <div class="separador"></div>
-
-
-        <p class="central">
-
-            Obrigado pela preferência!
-
-        </p>
-
-
-        <p class="central">
-
-            ESTE DOCUMENTO É UM<br>
-
-            COMPROVANTE DE VENDA.<br>
-
-            NÃO É DOCUMENTO FISCAL.
-
-        </p>
-
-        `,
-
-        async function () {
-
-            try {
-
-                // ==========================================
-                // ID DA MESA / QUARTO
-                // ==========================================
-
-                const idMesa =
-                    fechamento.idMesa ||
-
-                    (
-
-                        "mesa_" +
-
-                        String(
-                            fechamento.mesa || ""
-                        ).padStart(
-                            2,
-                            "0"
-                        )
-
-                    );
-
-
-                // ==========================================
-                // BUSCA PEDIDOS ACUMULADOS
-                // ==========================================
-
-                const referenciaPedidos =
-                    collection(
-
-                        dbGarcom,
-
-                        "mesas",
-
-                        idMesa,
-
-                        "pedidos"
-
-                    );
-
-
-                const snapshotPedidos =
-                    await getDocs(
-                        referenciaPedidos
-                    );
-
-
-                const exclusoes = [];
-
-
-                snapshotPedidos.forEach(
-                    documento => {
-
-                        exclusoes.push(
-
-                            deleteDoc(
-
-                                doc(
-
-                                    dbGarcom,
-
-                                    "mesas",
-
-                                    idMesa,
-
-                                    "pedidos",
-
-                                    documento.id
-
-                                )
-
-                            )
-
-                        );
-
-                    }
-                );
-
-
-                await Promise.all(
-                    exclusoes
-                );
-
-
-                // ==========================================
-                // LIBERA A MESA
-                // ==========================================
-
-                await setDoc(
-
-                    doc(
-                        dbGarcom,
-                        "mesas",
-                        idMesa
-                    ),
-
-                    {
-
-                        numero:
-                            Number(
-                                fechamento.mesa
-                            ),
-
-                        status:
-                            "livre",
-
-                        atualizadoEm:
-                            serverTimestamp()
-
-                    },
-
-                    {
-                        merge: true
-                    }
-
-                );
-
-
-                // ==========================================
-                // REMOVE O FECHAMENTO
-                // ==========================================
-
-                await deleteDoc(
-
-                    doc(
-
-                        dbGarcom,
-
-                        "fechamentos",
-
-                        fechamento.id
-
-                    )
-
-                );
-
-            }
-
-            catch (erro) {
-
-                console.error(
-                    "Erro ao concluir fechamento:",
-                    erro
-                );
-
-
-                alert(
-
-                    "⚠️ A conta foi impressa, " +
-                    "mas não foi possível liberar a mesa.\n\n" +
-
-                    (
-                        erro.code ||
-                        "sem código"
-                    ) +
-
-                    "\n\n" +
-
-                    (
-                        erro.message ||
-                        erro
-                    )
-
-                );
-
-            }
-
-            finally {
-
-                fechamentosEmAndamento.delete(
-                    fechamento.id
-                );
-
-            }
-
-        }
-
-    );
-
 }
-
-
 // =====================================================
 // JANELA DE IMPRESSÃO 80MM
 // =====================================================
