@@ -712,7 +712,7 @@ async function imprimirHospede(pedido, automatico = false) {
 }
 
 // =====================================================
-// IMPRESSÃO - GARÇOM / PRODUÇÃO
+// IMPRESSÃO - GARÇOM / PRODUÇÃO - 2 VIAS
 // =====================================================
 
 async function imprimirGarcom(pedido, automatico = false) {
@@ -722,15 +722,12 @@ async function imprimirGarcom(pedido, automatico = false) {
         return;
     }
 
-
     const itens =
         Array.isArray(pedido.itens)
             ? pedido.itens
             : [];
 
-
     let itensHTML = "";
-
 
     itens.forEach(item => {
 
@@ -739,13 +736,8 @@ async function imprimirGarcom(pedido, automatico = false) {
             <div class="item-producao">
 
                 <strong>
-
                     ${item.quantidade}x
-
-                    ${escaparHTML(
-                        item.nome
-                    )}
-
+                    ${escaparHTML(item.nome)}
                 </strong>
 
             </div>
@@ -754,10 +746,8 @@ async function imprimirGarcom(pedido, automatico = false) {
 
     });
 
+    const conteudo = `
 
-    abrirImpressao(
-
-        `
         <h1>HOTEL DO BAÚ</h1>
 
         <h2>PRODUÇÃO</h2>
@@ -766,21 +756,23 @@ async function imprimirGarcom(pedido, automatico = false) {
 
         <p class="identificacao-print mesa-print">
 
-    MESA
-    ${String(
-        pedido.mesa || ""
-    ).padStart(2, "0")}
+            MESA
+            ${String(
+                pedido.mesa || ""
+            ).padStart(2, "0")}
 
-</p>
-
-${pedido.quarto
-    ? `
-        <p class="identificacao-print">
-            QUARTO ${escaparHTML(pedido.quarto)}
         </p>
-      `
-    : ""
-}
+
+        ${
+            pedido.quarto
+                ? `
+                    <p class="identificacao-print">
+                        QUARTO ${escaparHTML(pedido.quarto)}
+                    </p>
+                  `
+                : ""
+        }
+
         <p class="central">
 
             ${escaparHTML(
@@ -802,67 +794,103 @@ ${pedido.quarto
         <p class="obs">
 
             ${escaparHTML(
-                pedido.observacao ||
-                "Nenhuma"
+                pedido.observacao || "Nenhuma"
             )}
 
         </p>
-        `,
 
-        async function () {
+    `;
 
-            const chave = `garcom:${pedido.id}`;
+    const chave = `garcom:${pedido.id}`;
 
-            try {
-                // No modo automático do Brave (--kiosk-printing), não pede confirmação.
-                // No botão manual, mantém a confirmação de segurança.
-                if (!automatico) {
-                    const confirmar = confirm(
-                        "A impressão da Mesa " +
-                        String(pedido.mesa || "").padStart(2, "0") +
-                        " saiu corretamente?"
-                    );
+    try {
 
-                    if (!confirmar) {
-                        return;
-                    }
-                }
+        // ==========================================
+        // PRIMEIRA VIA
+        // ==========================================
 
-                await deleteDoc(
-                    doc(
-                        dbGarcom,
-                        "pedidos_producao",
-                        pedido.id
-                    )
-                );
+        await abrirImpressao(
+            conteudo,
+            async function () {}
+        );
 
-            }
-            catch (erro) {
-                console.error("Erro ao finalizar produção:", erro);
-                alert(
-                    "A impressão saiu, mas não foi possível retirar o pedido da fila."
-                );
-            }
-            finally {
-                impressoesAutomaticasEmAndamento.delete(chave);
+
+        // ==========================================
+        // PAUSA ENTRE AS DUAS VIAS
+        // ==========================================
+
+        await new Promise(
+            resolve => setTimeout(resolve, 800)
+        );
+
+
+        // ==========================================
+        // SEGUNDA VIA
+        // ==========================================
+
+        await abrirImpressao(
+            conteudo,
+            async function () {}
+        );
+
+
+        // ==========================================
+        // CONFIRMAÇÃO MANUAL
+        // ==========================================
+
+        if (!automatico) {
+
+            const confirmar = confirm(
+                "As 2 vias da produção foram enviadas para impressão?"
+            );
+
+            if (!confirmar) {
+                return;
             }
 
         }
 
-    );
+
+        // ==========================================
+        // REMOVE DA FILA DE PRODUÇÃO
+        // ==========================================
+
+        await deleteDoc(
+            doc(
+                dbGarcom,
+                "pedidos_producao",
+                pedido.id
+            )
+        );
+
+    }
+
+    catch (erro) {
+
+        console.error(
+            "Erro ao imprimir as 2 vias da produção:",
+            erro
+        );
+
+        alert(
+            "⚠️ Não foi possível concluir as 2 impressões da produção."
+        );
+
+    }
+
+    finally {
+
+        impressoesAutomaticasEmAndamento.delete(
+            chave
+        );
+
+    }
 
 }
 
-async function gerarNumeroComanda() {
-    const referenciaControle = doc(dbGarcom, "controle", "comanda");
-    return await runTransaction(dbGarcom, async (transacao) => {
-        const documento = await transacao.get(referenciaControle);
-        const ultimoNumero = Number(documento.exists() ? documento.data().ultimoNumero || 0 : 0);
-        const proximoNumero = ultimoNumero + 1;
-        transacao.set(referenciaControle, { ultimoNumero: proximoNumero, atualizadoEm: serverTimestamp() }, { merge: true });
-        return String(proximoNumero).padStart(6, "0");
-    });
-}
+    // =====================================================
+// IMPRESSÃO - FECHAMENTO
+// =====================================================
 
 async function imprimirFechamento(fechamento) {
 
@@ -874,15 +902,12 @@ async function imprimirFechamento(fechamento) {
 
     fechamentosEmAndamento.add(fechamento.id);
 
-
     const itens =
         Array.isArray(fechamento.itens)
             ? fechamento.itens
             : [];
 
-
     let itensHTML = "";
-
 
     itens.forEach(item => {
 
@@ -890,8 +915,8 @@ async function imprimirFechamento(fechamento) {
             Number(item.preco || 0) *
             Number(item.quantidade || 0);
 
-
         itensHTML += `
+
             <div class="linha-item-impressao">
 
                 <span>
@@ -904,6 +929,7 @@ async function imprimirFechamento(fechamento) {
                 </span>
 
             </div>
+
         `;
 
     });
@@ -942,19 +968,31 @@ async function imprimirFechamento(fechamento) {
     if (fechamento.quarto) {
 
         identificacao = `
+
             <p class="identificacao-print">
+
                 QUARTO
-                ${escaparHTML(String(fechamento.quarto))}
+                ${escaparHTML(
+                    String(fechamento.quarto)
+                )}
+
             </p>
+
         `;
 
     } else {
 
         identificacao = `
+
             <p class="identificacao-print mesa-print">
+
                 MESA
-                ${String(fechamento.mesa || "").padStart(2, "0")}
+                ${String(
+                    fechamento.mesa || ""
+                ).padStart(2, "0")}
+
             </p>
+
         `;
 
     }
@@ -967,68 +1005,98 @@ async function imprimirFechamento(fechamento) {
     let numeroComanda;
 
     try {
-        numeroComanda = await gerarNumeroComanda();
-    } catch (erro) {
-    console.error("ERRO COMPLETO AO GERAR COMANDA:", erro);
 
-    alert(
-        "ERRO AO GERAR COMANDA\n\n" +
-        "Código: " + (erro.code || "desconhecido") + "\n\n" +
-        "Mensagem: " + (erro.message || erro)
-    );
+        numeroComanda =
+            await gerarNumeroComanda();
 
-    fechamentosEmAndamento.delete(fechamento.id);
-    return;
-}
+    }
+
+    catch (erro) {
+
+        console.error(
+            "ERRO COMPLETO AO GERAR COMANDA:",
+            erro
+        );
+
+        alert(
+            "ERRO AO GERAR COMANDA\n\n" +
+            "Código: " +
+            (erro.code || "desconhecido") +
+            "\n\n" +
+            "Mensagem: " +
+            (erro.message || erro)
+        );
+
+        fechamentosEmAndamento.delete(
+            fechamento.id
+        );
+
+        return;
+
+    }
+
 
     // ==========================================
-    // IMPRESSÃO
+    // IMPRESSÃO DO FECHAMENTO
     // ==========================================
 
     abrirImpressao(
 
         `
+
         <h1>HOTEL DO BAÚ</h1>
 
         <h2>COMPROVANTE DE VENDA</h2>
 
         <p class="central">
+
             MAR BBC HOTELARIA E TURISMO LTDA
+
         </p>
 
         <p class="central">
+
             Rua Nove de Julho, 177<br>
+
             Centro - Santa Rosa de Viterbo/SP<br>
+
             CNPJ: 59.143.158/0001-63
+
         </p>
 
         <div class="separador"></div>
 
-        <p class="central"><strong>COMANDA Nº ${numeroComanda}</strong></p>
+        <p class="central">
+
+            <strong>
+                COMANDA Nº ${numeroComanda}
+            </strong>
+
+        </p>
 
         <div class="separador"></div>
-
 
         ${identificacao}
 
-
         <p class="central">
-            ${escaparHTML(fechamento.dataHora || "")}
+
+            ${escaparHTML(
+                fechamento.dataHora || ""
+            )}
+
         </p>
 
-
         <div class="separador"></div>
-
 
         ${itensHTML}
 
-
         <div class="separador"></div>
-
 
         <div class="total-impressao">
 
-            <span>CONSUMO</span>
+            <span>
+                CONSUMO
+            </span>
 
             <span>
                 ${dinheiro(subtotal)}
@@ -1040,22 +1108,25 @@ async function imprimirFechamento(fechamento) {
         ${
             desconto > 0
                 ? `
+
                     <div class="total-impressao">
 
-                        <span>DESCONTO</span>
+                        <span>
+                            DESCONTO
+                        </span>
 
                         <span>
                             - ${dinheiro(desconto)}
                         </span>
 
                     </div>
-                `
+
+                  `
                 : ""
         }
 
 
         <div class="separador"></div>
-
 
         <div class="total-impressao">
 
@@ -1069,37 +1140,46 @@ async function imprimirFechamento(fechamento) {
 
         </div>
 
-
         <div class="separador"></div>
 
-
         <p class="central">
+
             Obrigado pela preferência!
+
         </p>
 
         <p class="central">
-            ESTE DOCUMENTO É UM<br>
-            COMPROVANTE DE VENDA.<br>
-            NÃO É DOCUMENTO FISCAL.
-        </p>
-        `,
 
+            ESTE DOCUMENTO É UM<br>
+
+            COMPROVANTE DE VENDA.<br>
+
+            NÃO É DOCUMENTO FISCAL.
+
+        </p>
+
+        `,
 
         async function () {
 
             try {
 
+                // ==========================================
+                // IDENTIFICAÇÃO DA MESA
+                // ==========================================
+
                 const idMesa =
                     fechamento.idMesa ||
                     (
                         "mesa_" +
-                        String(fechamento.mesa || "")
-                            .padStart(2, "0")
+                        String(
+                            fechamento.mesa || ""
+                        ).padStart(2, "0")
                     );
 
 
                 // ==========================================
-                // APAGA OS PEDIDOS ACUMULADOS
+                // BUSCA OS PEDIDOS ACUMULADOS DA MESA
                 // ==========================================
 
                 const referenciaPedidos =
@@ -1117,29 +1197,38 @@ async function imprimirFechamento(fechamento) {
                     );
 
 
+                // ==========================================
+                // APAGA OS PEDIDOS ACUMULADOS
+                // ==========================================
+
                 const exclusoes = [];
 
+                snapshotPedidos.forEach(
+                    documento => {
 
-                snapshotPedidos.forEach(documento => {
+                        exclusoes.push(
 
-                    exclusoes.push(
+                            deleteDoc(
 
-                        deleteDoc(
-                            doc(
-                                dbGarcom,
-                                "mesas",
-                                idMesa,
-                                "pedidos",
-                                documento.id
+                                doc(
+                                    dbGarcom,
+                                    "mesas",
+                                    idMesa,
+                                    "pedidos",
+                                    documento.id
+                                )
+
                             )
-                        )
 
-                    );
+                        );
 
-                });
+                    }
+                );
 
 
-                await Promise.all(exclusoes);
+                await Promise.all(
+                    exclusoes
+                );
 
 
                 // ==========================================
@@ -1155,9 +1244,17 @@ async function imprimirFechamento(fechamento) {
                     ),
 
                     {
-                        numero: Number(fechamento.mesa),
-                        status: "livre",
-                        atualizadoEm: serverTimestamp()
+                        numero:
+                            Number(
+                                fechamento.mesa
+                            ),
+
+                        status:
+                            "livre",
+
+                        atualizadoEm:
+                            serverTimestamp()
+
                     },
 
                     {
@@ -1190,12 +1287,17 @@ async function imprimirFechamento(fechamento) {
                     erro
                 );
 
-
                 alert(
-                    "⚠️ A conta foi impressa, mas não foi possível liberar a mesa.\n\n" +
+
+                    "⚠️ A conta foi impressa, " +
+                    "mas não foi possível liberar a mesa.\n\n" +
+
                     (erro.code || "sem código") +
+
                     "\n\n" +
+
                     (erro.message || erro)
+
                 );
 
             }
