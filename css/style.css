@@ -388,3 +388,307 @@ body {
     }
 
 }
+/* =====================================================
+   MESAS / COMANDAS
+===================================================== */
+
+body.mesa-page .topo {
+    text-align: center;
+    padding: 30px 20px;
+    background: #ffffff;
+    border-radius: 0 0 25px 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+
+body.mesa-page .topo h1 {
+    margin: 0;
+    color: #C58A00;
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+}
+
+body.mesa-page .topo p {
+    margin: 8px 0 0;
+    color: #666;
+    font-size: 16px;
+}
+
+body.mesa-page main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 25px 20px 40px;
+}
+
+
+/* =========================
+   RESUMO DA MESA
+========================= */
+
+.resumo-mesa {
+    background: #fff;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,.10);
+    margin-bottom: 20px;
+}
+
+.linha-resumo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.linha-resumo:last-child {
+    border-bottom: none;
+}
+
+.linha-resumo span {
+    color: #666;
+}
+
+.linha-resumo strong {
+    font-size: 18px;
+}
+
+
+/* =========================
+   BOTÕES DA MESA
+========================= */
+
+.acoes-mesa {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.acoes-mesa button,
+.btn-voltar {
+    border: none;
+    border-radius: 14px;
+    padding: 15px 18px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.acoes-mesa button:hover,
+.btn-voltar:hover {
+    transform: translateY(-2px);
+}
+
+.btn-pedido {
+    background: #C58A00;
+    color: white;
+}
+
+.btn-consumo {
+    background: #245d88;
+    color: white;
+}
+
+.btn-fechar {
+    background: #333;
+    color: white;
+}
+
+
+/* =========================
+   CONSUMO
+========================= */
+
+.consumo-mesa {
+    display: none;
+    background: #fff;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,.10);
+    margin-bottom: 25px;
+}
+
+.consumo-mesa.mostrar {
+    display: block;
+}
+
+.consumo-mesa h2 {
+    margin-top: 0;
+    color: #C58A00;
+}
+
+.mesa-vazia {
+    color: #777;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.item-consumo {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 14px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.item-consumo:last-child {
+    border-bottom: none;
+}
+
+.item-consumo > div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.item-consumo small {
+    color: #777;
+}
+
+
+/* =========================
+   BOTÃO VOLTAR
+========================= */
+
+.btn-voltar {
+    display: block;
+    width: 100%;
+    background: #eee;
+    color: #333;
+}
+
+
+/* =========================
+   MODAL DE FECHAMENTO
+========================= */
+
+.modal-fechamento {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-fechamento.mostrar {
+    display: flex;
+}
+
+.caixa-fechamento {
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 10px 35px rgba(0,0,0,.25);
+}
+
+.caixa-fechamento h2 {
+    margin-top: 0;
+    text-align: center;
+    color: #C58A00;
+}
+
+.resumo-fechamento {
+    margin: 20px 0;
+}
+
+.resumo-fechamento > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.campo-desconto {
+    flex-wrap: wrap;
+}
+
+.campo-valor {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.campo-valor span {
+    padding: 8px;
+    background: #f5f5f5;
+    color: #555;
+}
+
+.campo-valor input {
+    width: 100px;
+    border: none;
+    outline: none;
+    padding: 9px;
+    font-size: 16px;
+    text-align: right;
+}
+
+.linha-total-fechamento {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.linha-total-fechamento strong {
+    color: #C58A00;
+    font-size: 22px;
+}
+
+.acoes-fechamento {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.acoes-fechamento .btn-voltar,
+.acoes-fechamento .btn-fechar {
+    width: 100%;
+}
+
+
+/* =========================
+   CELULAR
+========================= */
+
+@media (max-width: 700px) {
+
+    body.mesa-page .topo {
+        padding: 25px 15px;
+    }
+
+    body.mesa-page .topo h1 {
+        font-size: 27px;
+    }
+
+  body.mesa-page main {
+        padding: 20px 15px 35px;
+    }
+
+    .acoes-mesa {
+        grid-template-columns: 1fr;
+    }
+
+    .acoes-mesa button {
+        width: 100%;
+    }
+
+    .item-consumo {
+        align-items: flex-start;
+    }
+
+    .acoes-fechamento {
+        grid-template-columns: 1fr;
+    }
+
+}
