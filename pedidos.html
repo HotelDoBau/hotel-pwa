@@ -1690,61 +1690,70 @@ async function imprimirHospede(
 
 
 // =====================================================
-// IMPRESSÃO - FECHAMENTO FINAL
+// IMPRESSÃO - FECHAMENTO
 // =====================================================
 
-async function imprimirFechamento(
-    fechamento
-) {
+async function imprimirFechamento(fechamento) {
 
-    if (!fechamento) {
+    if (!fechamento?.id) {
         return;
     }
 
-    const tipo =
-        fechamento.tipo === "quarto"
-            ? "quarto"
-            : "mesa";
-
-    const numero =
-        fechamento.quarto ||
-        fechamento.mesa ||
-        fechamento.numero;
-
-    if (!numero) {
-        console.error(
-            "Fechamento sem mesa/quarto:",
-            fechamento
-        );
+    if (fechamentosEmAndamento.has(fechamento.id)) {
         return;
     }
 
-    const idMesa =
-        `${tipo}_${String(numero).padStart(2, "0")}`;
+    fechamentosEmAndamento.add(fechamento.id);
+
+    try {
+
+        // ==========================================
+        // IDENTIFICAÇÃO DA MESA / QUARTO
+        // ==========================================
+
+        const tipo =
+            fechamento.tipo === "quarto"
+                ? "quarto"
+                : "mesa";
+
+        const numero =
+            fechamento.quarto ||
+            fechamento.mesa ||
+            fechamento.numero ||
+            "";
+
+        const idMesa =
+            fechamento.idMesa ||
+            `${tipo}_${String(numero).padStart(2, "0")}`;
 
 
-    const referenciaPedidos =
-        collection(
-            dbGarcom,
-            "mesas",
-            idMesa,
-            "pedidos"
-        );
+        // ==========================================
+        // BUSCAR TODOS OS PEDIDOS DA MESA
+        // ==========================================
+
+        const referenciaPedidos =
+            collection(
+                dbGarcom,
+                "mesas",
+                idMesa,
+                "pedidos"
+            );
+
+        const snapshotPedidos =
+            await getDocs(
+                referenciaPedidos
+            );
 
 
-    const snapshot =
-        await getDocs(
-            referenciaPedidos
-        );
+        // ==========================================
+        // JUNTAR TODOS OS ITENS
+        // ==========================================
 
+        const itensAcumulados = {};
 
-    const itensAcumulados = new Map();
+        let totalCalculado = 0;
 
-    let totalGeral = 0;
-
-
-    snapshot.forEach(
-        documento => {
+        snapshotPedidos.forEach(documento => {
 
             const pedido =
                 documento.data();
@@ -1754,227 +1763,433 @@ async function imprimirFechamento(
                     ? pedido.itens
                     : [];
 
+            itens.forEach(item => {
 
-            itens.forEach(
-                item => {
+                const chave =
+                    item.id ??
+                    item.nome;
 
-                    const idItem =
-                        String(
-                            item.id ??
-                            item.nome
-                        );
+                if (!chave) {
+                    return;
+                }
 
-                    const quantidade =
-                        Number(
-                            item.quantidade || 0
-                        );
+                if (!itensAcumulados[chave]) {
 
-                    const preco =
-                        Number(
-                            item.preco || 0
-                        );
+                    itensAcumulados[chave] = {
+
+                        id: item.id,
+
+                        nome:
+                            item.nome || "",
+
+                        preco:
+                            Number(item.preco || 0),
+
+                        quantidade: 0
+
+                    };
+
+                }
+
+                itensAcumulados[chave].quantidade +=
+                    Number(item.quantidade || 0);
+
+            });
+
+            totalCalculado +=
+                Number(pedido.total || 0);
+
+        });
 
 
-                    if (
-                        itensAcumulados.has(
-                            idItem
+        const itens =
+            Object.values(
+                itensAcumulados
+            );
+
+
+        // ==========================================
+        // VALORES DO FECHAMENTO
+        // ==========================================
+
+        const subtotal =
+            Number(
+                fechamento.subtotal ??
+                totalCalculado ??
+                fechamento.total ??
+                0
+            );
+
+        const desconto =
+            Number(
+                fechamento.desconto ?? 0
+            );
+
+        const total =
+            Number(
+                fechamento.total ??
+                (subtotal - desconto)
+            );
+
+
+        // ==========================================
+        // GERAR NÚMERO DA COMANDA
+        // ==========================================
+
+        let numeroComanda;
+
+        try {
+
+            numeroComanda =
+                await gerarNumeroComanda();
+
+        }
+
+        catch (erro) {
+
+            console.error(
+                "ERRO AO GERAR NÚMERO DA COMANDA:",
+                erro
+            );
+
+            alert(
+                "ERRO AO GERAR COMANDA\n\n" +
+                "Código: " +
+                (erro.code || "desconhecido") +
+                "\n\n" +
+                "Mensagem: " +
+                (erro.message || erro)
+            );
+
+            return;
+        }
+
+
+        // ==========================================
+        // ITENS PARA IMPRESSÃO
+        // ==========================================
+
+        let itensHTML = "";
+
+        itens.forEach(item => {
+
+            const subtotalItem =
+                Number(item.preco || 0) *
+                Number(item.quantidade || 0);
+
+            itensHTML += `
+
+                <div class="linha-item-impressao">
+
+                    <span>
+                        ${Number(item.quantidade || 0)}x
+                        ${escaparHTML(item.nome || "")}
+                    </span>
+
+                    <span>
+                        ${dinheiro(subtotalItem)}
+                    </span>
+
+                </div>
+
+            `;
+
+        });
+
+
+        // ==========================================
+        // IDENTIFICAÇÃO DA MESA / QUARTO
+        // ==========================================
+
+        let identificacao = "";
+
+        if (tipo === "quarto") {
+
+            identificacao = `
+
+                <p class="identificacao-print">
+
+                    QUARTO
+                    ${escaparHTML(
+                        String(numero)
+                    )}
+
+                </p>
+
+            `;
+
+        }
+
+        else {
+
+            identificacao = `
+
+                <p class="identificacao-print mesa-print">
+
+                    MESA
+                    ${escaparHTML(
+                        String(numero).padStart(2, "0")
+                    )}
+
+                </p>
+
+            `;
+
+        }
+
+
+        // ==========================================
+        // CONTEÚDO DA CONTA FINAL
+        // ==========================================
+
+        const conteudo = `
+
+            <h1>
+                HOTEL DO BAÚ
+            </h1>
+
+            <h2>
+                COMPROVANTE DE VENDA
+            </h2>
+
+
+            <p class="central">
+
+                MAR BBC HOTELARIA E TURISMO LTDA
+
+            </p>
+
+
+            <p class="central">
+
+                Rua Nove de Julho, 177<br>
+
+                Centro - Santa Rosa de Viterbo/SP<br>
+
+                CNPJ: 59.143.158/0001-63
+
+            </p>
+
+
+            <div class="separador"></div>
+
+
+            <p class="central">
+
+                <strong>
+                    COMANDA Nº ${numeroComanda}
+                </strong>
+
+            </p>
+
+
+            <div class="separador"></div>
+
+
+            ${identificacao}
+
+
+            <p class="central">
+
+                ${escaparHTML(
+                    fechamento.dataHora ||
+                    new Date().toLocaleString("pt-BR")
+                )}
+
+            </p>
+
+
+            <div class="separador"></div>
+
+
+            ${itensHTML}
+
+
+            <div class="separador"></div>
+
+
+            <div class="total-impressao">
+
+                <span>
+                    CONSUMO
+                </span>
+
+                <span>
+                    ${dinheiro(subtotal)}
+                </span>
+
+            </div>
+
+
+            ${
+                desconto > 0
+                    ? `
+
+                        <div class="total-impressao">
+
+                            <span>
+                                DESCONTO
+                            </span>
+
+                            <span>
+                                - ${dinheiro(desconto)}
+                            </span>
+
+                        </div>
+
+                    `
+                    : ""
+            }
+
+
+            <div class="separador"></div>
+
+
+            <div class="total-impressao">
+
+                <span>
+                    TOTAL A PAGAR
+                </span>
+
+                <span>
+                    ${dinheiro(total)}
+                </span>
+
+            </div>
+
+
+            <div class="separador"></div>
+
+
+            <p class="central">
+
+                Obrigado pela preferência!
+
+            </p>
+
+
+            <p class="central">
+
+                ESTE DOCUMENTO É UM<br>
+
+                COMPROVANTE DE VENDA.<br>
+
+                NÃO É DOCUMENTO FISCAL.
+
+            </p>
+
+        `;
+
+
+        // ==========================================
+        // IMPRIMIR
+        // ==========================================
+
+        await abrirImpressao(
+            conteudo
+        );
+
+
+        // ==========================================
+        // APÓS IMPRIMIR:
+        // 1. LIMPAR PEDIDOS
+        // 2. LIBERAR MESA/QUARTO
+        // 3. REMOVER FECHAMENTO DA FILA
+        // ==========================================
+
+        try {
+
+            // --------------------------------------
+            // APAGAR PEDIDOS ACUMULADOS
+            // --------------------------------------
+
+            const exclusoes = [];
+
+            snapshotPedidos.forEach(
+                documento => {
+
+                    exclusoes.push(
+
+                        deleteDoc(
+
+                            doc(
+                                dbGarcom,
+                                "mesas",
+                                idMesa,
+                                "pedidos",
+                                documento.id
+                            )
+
                         )
-                    ) {
 
-                        const existente =
-                            itensAcumulados.get(
-                                idItem
-                            );
-
-                        existente.quantidade +=
-                            quantidade;
-
-                        existente.subtotal =
-                            existente.quantidade *
-                            existente.preco;
-
-                    }
-
-                    else {
-
-                        itensAcumulados.set(
-                            idItem,
-                            {
-                                nome:
-                                    item.nome ||
-                                    "Item",
-
-                                preco,
-
-                                quantidade,
-
-                                subtotal:
-                                    quantidade *
-                                    preco
-                            }
-                        );
-
-                    }
+                    );
 
                 }
             );
 
 
-            totalGeral +=
-                Number(
-                    pedido.total || 0
+            if (exclusoes.length > 0) {
+
+                await Promise.all(
+                    exclusoes
                 );
 
-        }
-    );
+            }
 
 
-    /*
-     * Se o fechamento já trouxer um total,
-     * usamos esse valor.
-     */
+            // --------------------------------------
+            // LIBERAR MESA / QUARTO
+            // --------------------------------------
 
-    if (
-        fechamento.total !== undefined &&
-        fechamento.total !== null
-    ) {
+            await setDoc(
 
-        totalGeral =
-            Number(
-                fechamento.total
-            );
-
-    }
-
-
-    const identificacao =
-        tipo === "quarto"
-            ? "QUARTO"
-            : "MESA";
-
-
-    let conteudo = "";
-
-    conteudo += `
-        <h1>HOTEL DO BAÚ</h1>
-
-        <h2>CONTA FINAL</h2>
-
-        <div class="separador"></div>
-
-        <div class="identificacao-print">
-            ${identificacao}
-            <span class="mesa-print">
-                ${String(numero).padStart(2, "0")}
-            </span>
-        </div>
-
-        <div class="separador"></div>
-    `;
-
-
-    itensAcumulados.forEach(
-        item => {
-
-            conteudo += `
-                <div class="linha-item-impressao">
-                    <span>
-                        ${item.quantidade}x
-                        ${escaparHTML(
-                            item.nome
-                        )}
-                    </span>
-
-                    <span>
-                        ${dinheiro(
-                            item.subtotal
-                        )}
-                    </span>
-                </div>
-            `;
-
-        }
-    );
-
-
-    conteudo += `
-        <div class="separador"></div>
-
-        <div class="total-impressao">
-            <span>TOTAL</span>
-
-            <span>
-                ${dinheiro(
-                    totalGeral
-                )}
-            </span>
-        </div>
-
-        <div class="separador"></div>
-
-        <div class="central">
-            CONTA ENCERRADA
-        </div>
-    `;
-
-
-    await abrirImpressao(
-        conteudo
-    );
-
-
-    /*
-     * Depois da impressão final,
-     * apagamos os pedidos acumulados.
-     */
-
-    for (
-        const documento
-        of snapshot.docs
-    ) {
-
-        try {
-
-            await deleteDoc(
                 doc(
                     dbGarcom,
                     "mesas",
-                    idMesa,
-                    "pedidos",
-                    documento.id
-                )
+                    idMesa
+                ),
+
+                {
+
+                    numero:
+                        Number(numero),
+
+                    tipo:
+                        tipo,
+
+                    status:
+                        "livre",
+
+                    atualizadoEm:
+                        serverTimestamp()
+
+                },
+
+                {
+                    merge: true
+                }
+
             );
 
-        }
 
-        catch (erro) {
-
-            console.error(
-                "Erro ao limpar pedido:",
-                documento.id,
-                erro
-            );
-
-        }
-
-    }
-
-
-    /*
-     * Remove também o documento de fechamento
-     * já processado.
-     */
-
-    if (fechamento.id) {
-
-        try {
+            // --------------------------------------
+            // REMOVER FECHAMENTO DA FILA
+            // --------------------------------------
 
             await deleteDoc(
+
                 doc(
                     dbGarcom,
                     "fechamentos",
                     fechamento.id
                 )
+
+            );
+
+
+            console.log(
+                "Fechamento concluído com sucesso:",
+                idMesa
             );
 
         }
@@ -1982,15 +2197,62 @@ async function imprimirFechamento(
         catch (erro) {
 
             console.error(
-                "Erro ao remover fechamento:",
+                "Erro ao concluir fechamento:",
                 erro
+            );
+
+            alert(
+
+                "⚠️ A conta foi impressa, " +
+                "mas houve um problema ao liberar a mesa.\n\n" +
+
+                "Código: " +
+                (erro.code || "sem código") +
+
+                "\n\n" +
+
+                "Mensagem: " +
+                (erro.message || erro)
+
             );
 
         }
 
     }
 
+    catch (erro) {
+
+        console.error(
+            "Erro no fechamento:",
+            erro
+        );
+
+        alert(
+
+            "⚠️ Não foi possível concluir o fechamento.\n\n" +
+
+            "Código: " +
+            (erro.code || "sem código") +
+
+            "\n\n" +
+
+            "Mensagem: " +
+            (erro.message || erro)
+
+        );
+
+    }
+
+    finally {
+
+        fechamentosEmAndamento.delete(
+            fechamento.id
+        );
+
+    }
+
 }
+
 
 
 // =====================================================
