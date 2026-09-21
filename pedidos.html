@@ -695,8 +695,10 @@ async function imprimirPedidoAutomaticamente(
         return;
     }
 
+
     const chave =
         `${origem}:${pedido.id}`;
+
 
     // ==========================================
     // PRIMEIRA TRAVA — ESTA PÁGINA
@@ -711,6 +713,7 @@ async function imprimirPedidoAutomaticamente(
         return;
 
     }
+
 
     // ==========================================
     // SEGUNDA TRAVA — TODAS AS ABAS/JANELAS
@@ -729,9 +732,11 @@ async function imprimirPedidoAutomaticamente(
 
     }
 
+
     impressoesAutomaticasEmAndamento.add(
         chave
     );
+
 
     try {
 
@@ -743,56 +748,109 @@ async function imprimirPedidoAutomaticamente(
             origem === "hospede"
         ) {
 
-            await imprimirHospede(
-                pedido,
-                true
-            );
+            try {
+
+                await imprimirHospede(
+                    pedido,
+                    true
+                );
+
+            }
+
+            catch (erro) {
+
+                console.error(
+                    "Erro ao imprimir pedido do hóspede:",
+                    erro
+                );
+
+            }
 
             return;
 
         }
+
 
         // ==========================================
         // GARÇOM
         // ==========================================
 
         console.log(
-            "Iniciando impressão do consumo:",
+            "Novo pedido do garçom recebido:",
             pedido
         );
 
-        // PRIMEIRO:
-        // CONSUMO COMPLETO ACUMULADO
 
-        await imprimirConsumoMesa(
-            pedido,
-            true
-        );
+        // ==========================================
+        // 1º — PRODUÇÃO
+        // SOMENTE OS ITENS NOVOS
+        // ==========================================
 
-        // DEPOIS:
-        // SOMENTE O PEDIDO NOVO PARA PRODUÇÃO
+        try {
 
-        await imprimirGarcom(
-            pedido,
-            true
-        );
+            console.log(
+                "Iniciando impressão da produção:",
+                pedido.id
+            );
 
-    }
 
-    catch (erro) {
+            await imprimirGarcom(
+                pedido,
+                true
+            );
 
-        console.error(
-            "Erro na impressão automática:",
-            erro
-        );
 
-        alert(
-            "⚠️ Erro durante a impressão automática.\n\n" +
-            (
-                erro.message ||
-                erro
-            )
-        );
+            console.log(
+                "Produção enviada para impressão:",
+                pedido.id
+            );
+
+        }
+
+        catch (erroProducao) {
+
+            console.error(
+                "Erro na impressão da produção:",
+                erroProducao
+            );
+
+        }
+
+
+        // ==========================================
+        // 2º — CONSUMO ACUMULADO
+        // TODOS OS PEDIDOS DA MESA
+        // ==========================================
+
+        try {
+
+            console.log(
+                "Iniciando impressão do consumo acumulado:",
+                pedido
+            );
+
+
+            await imprimirConsumoMesa(
+                pedido,
+                true
+            );
+
+
+            console.log(
+                "Consumo enviado para impressão:",
+                pedido.id
+            );
+
+        }
+
+        catch (erroConsumo) {
+
+            console.error(
+                "Erro na impressão do consumo:",
+                erroConsumo
+            );
+
+        }
 
     }
 
@@ -802,1327 +860,10 @@ async function imprimirPedidoAutomaticamente(
             chave
         );
 
-        liberarTravaImpressao(chave);
 
-    }
-
-}
-
-
-// =====================================================
-// TELA
-// =====================================================
-
-function atualizarTela() {
-
-    const lista =
-        document.getElementById(
-            "lista-pedidos"
+        liberarTravaImpressao(
+            chave
         );
-
-
-    const contador =
-        document.getElementById(
-            "contador-pedidos"
-        );
-
-
-    const todos = [
-
-        ...pedidosHospedes.map(
-            p => ({
-                ...p,
-                origem: "hospede"
-            })
-        ),
-
-        ...pedidosGarcom.map(
-            p => ({
-                ...p,
-                origem: "garcom"
-            })
-        )
-
-    ];
-
-
-    todos.sort(
-        (a, b) =>
-            obterTempo(b) -
-            obterTempo(a)
-    );
-
-
-    contador.textContent =
-        todos.length === 1
-
-            ? "1 pedido pendente"
-
-            : `${todos.length} pedidos pendentes`;
-
-
-    lista.innerHTML = "";
-
-
-    if (
-        todos.length === 0
-    ) {
-
-        lista.innerHTML = `
-
-            <div class="sem-pedido">
-
-                <h2>
-                    📭 Nenhum pedido
-                </h2>
-
-                <p>
-                    Nenhuma comanda pendente no momento.
-                </p>
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    todos.forEach(
-        pedido => {
-
-            lista.appendChild(
-                criarCard(pedido)
-            );
-
-        }
-    );
-
-}
-
-
-function criarCard(pedido) {
-
-    const card =
-        document.createElement(
-            "article"
-        );
-
-
-    card.className =
-        "pedido-card";
-
-
-    const ehHospede =
-        pedido.origem === "hospede";
-
-
-    const itens =
-        Array.isArray(
-            pedido.itens
-        )
-            ? pedido.itens
-            : [];
-
-
-    let itensHTML = "";
-
-
-    itens.forEach(item => {
-
-        if (ehHospede) {
-
-            const subtotal =
-                Number(item.subtotal) ||
-                (
-                    Number(item.preco) *
-                    Number(item.quantidade)
-                );
-
-
-            itensHTML += `
-
-                <div class="item">
-
-                    <div class="item-esquerda">
-
-                        <strong>
-
-                            ${Number(
-                                item.quantidade
-                            )}x
-
-                            ${escaparHTML(
-                                item.nome
-                            )}
-
-                        </strong>
-
-                        <small>
-                            ${dinheiro(item.preco)} cada
-                        </small>
-
-                    </div>
-
-
-                    <strong class="subtotal">
-
-                        ${dinheiro(subtotal)}
-
-                    </strong>
-
-                </div>
-
-            `;
-
-        }
-
-        else {
-
-            itensHTML += `
-
-                <div class="item">
-
-                    <div class="item-esquerda">
-
-                        <strong>
-
-                            ${Number(
-                                item.quantidade
-                            )}x
-
-                            ${escaparHTML(
-                                item.nome
-                            )}
-
-                        </strong>
-
-                    </div>
-
-                </div>
-
-            `;
-
-        }
-
-    });
-
-
-    const tipo =
-        ehHospede
-
-            ? `
-                <span class="tipo-pedido tipo-hospede">
-                    🏨 Pedido do Hóspede
-                </span>
-              `
-
-            : `
-                <span class="tipo-pedido tipo-garcom">
-                    🍽️ Pedido do Garçom
-                </span>
-              `;
-
-
-    const identificacao =
-        ehHospede
-
-            ? `
-                🚪 Quarto:
-                <strong>
-                    ${escaparHTML(
-                        pedido.quarto || "-"
-                    )}
-                </strong>
-              `
-
-            : `
-                🪑 Mesa:
-                <strong>
-                    ${String(
-                        pedido.mesa || ""
-                    ).padStart(2, "0")}
-                </strong>
-              `;
-
-
-    const totalHTML =
-        ehHospede
-
-            ? `
-
-                <div class="linha"></div>
-
-                <div class="total">
-
-                    <span>
-                        TOTAL
-                    </span>
-
-                    <strong>
-                        ${dinheiro(
-                            pedido.total
-                        )}
-                    </strong>
-
-                </div>
-
-              `
-
-            : "";
-
-
-    card.innerHTML = `
-
-        ${tipo}
-
-
-        <div class="pedido-topo">
-
-            <div>
-
-                <h2>
-
-                    ${
-                        ehHospede
-                            ? "🧾 Novo Pedido"
-                            : "🍽️ Pedido para Produção"
-                    }
-
-                </h2>
-
-
-                <p class="identificacao">
-
-                    ${identificacao}
-
-                </p>
-
-            </div>
-
-
-            <span class="status novo">
-
-                🟢 Novo
-
-            </span>
-
-        </div>
-
-
-        <p class="data-hora">
-
-            🕒
-            ${escaparHTML(
-                pedido.dataHora || ""
-            )}
-
-        </p>
-
-
-        <div class="linha"></div>
-
-
-        <h3>
-            🍽️ Itens
-        </h3>
-
-
-        <div
-            class="itens ${
-                ehHospede
-                    ? ""
-                    : "sem-preco"
-            }"
-        >
-
-            ${itensHTML}
-
-        </div>
-
-
-        <div class="linha"></div>
-
-
-        <div class="observacao">
-
-            <strong>
-                📝 Observações
-            </strong>
-
-            <p>
-
-                ${escaparHTML(
-                    pedido.observacao ||
-                    "Nenhuma"
-                )}
-
-            </p>
-
-        </div>
-
-
-        ${totalHTML}
-
-
-        <div class="acoes-pedido">
-
-            <button
-                class="botao imprimir"
-                data-imprimir="${pedido.id}"
-                data-origem="${pedido.origem}">
-
-                🖨️ Imprimir
-
-            </button>
-
-
-            <button
-                class="botao finalizar"
-                data-finalizar="${pedido.id}"
-                data-origem="${pedido.origem}">
-
-                ✅ Finalizar
-
-            </button>
-
-        </div>
-
-    `;
-
-
-    return card;
-
-}
-
-
-// =====================================================
-// CLIQUES
-// =====================================================
-
-document
-    .getElementById(
-        "lista-pedidos"
-    )
-    .addEventListener(
-        "click",
-        async event => {
-
-            const botaoImprimir =
-                event.target.closest(
-                    "[data-imprimir]"
-                );
-
-
-            if (botaoImprimir) {
-
-                const id =
-                    botaoImprimir.dataset.imprimir;
-
-
-                const origem =
-                    botaoImprimir.dataset.origem;
-
-
-                const pedido =
-                    origem === "hospede"
-
-                        ? pedidosHospedes.find(
-                            p => p.id === id
-                        )
-
-                        : pedidosGarcom.find(
-                            p => p.id === id
-                        );
-
-
-                if (
-                    origem === "hospede"
-                ) {
-
-                    await imprimirHospede(
-                        pedido
-                    );
-
-                }
-
-                else {
-
-                    // Impressão manual:
-                    // produção + consumo atual.
-
-                    await imprimirGarcom(
-                        pedido
-                    );
-
-                    await imprimirConsumoMesa(
-                        pedido
-                    );
-
-                }
-
-
-                return;
-
-            }
-
-
-            const botaoFinalizar =
-                event.target.closest(
-                    "[data-finalizar]"
-                );
-
-
-            if (botaoFinalizar) {
-
-                const id =
-                    botaoFinalizar.dataset.finalizar;
-
-
-                const origem =
-                    botaoFinalizar.dataset.origem;
-
-
-                const confirmar =
-                    confirm(
-
-                        origem === "hospede"
-
-                            ? "Finalizar e remover este pedido do hóspede?"
-
-                            : "Finalizar este pedido da produção? O consumo da mesa continuará salvo."
-
-                    );
-
-
-                if (!confirmar) {
-                    return;
-                }
-
-
-                try {
-
-                    if (
-                        origem === "hospede"
-                    ) {
-
-                        await deleteDoc(
-
-                            doc(
-                                dbHospedes,
-                                "pedidos",
-                                id
-                            )
-
-                        );
-
-                    }
-
-                    else {
-
-                        // Remove somente da fila
-                        // de produção.
-
-                        // O histórico acumulado
-                        // permanece salvo.
-
-                        await deleteDoc(
-
-                            doc(
-                                dbGarcom,
-                                "pedidos_producao",
-                                id
-                            )
-
-                        );
-
-                    }
-
-                }
-
-                catch (erro) {
-
-                    console.error(
-                        "Erro ao finalizar pedido:",
-                        erro
-                    );
-
-                    alert(
-                        "❌ Não foi possível finalizar este pedido."
-                    );
-
-                }
-
-            }
-
-        }
-    );
-
-
-// =====================================================
-// IMPRESSÃO - HÓSPEDE
-// =====================================================
-
-async function imprimirHospede(
-    pedido,
-    automatico = false
-) {
-
-    if (!pedido) {
-
-        alert(
-            "Pedido não encontrado."
-        );
-
-        return;
-
-    }
-
-
-    const itens =
-        Array.isArray(
-            pedido.itens
-        )
-            ? pedido.itens
-            : [];
-
-
-    let itensHTML = "";
-
-
-    itens.forEach(item => {
-
-        const subtotal =
-            Number(item.subtotal) ||
-            (
-                Number(item.preco) *
-                Number(item.quantidade)
-            );
-
-
-        itensHTML += `
-
-            <div class="linha-item-impressao">
-
-                <span>
-
-                    ${item.quantidade}x
-                    ${escaparHTML(
-                        item.nome
-                    )}
-
-                </span>
-
-
-                <span>
-
-                    ${dinheiro(
-                        subtotal
-                    )}
-
-                </span>
-
-            </div>
-
-        `;
-
-    });
-
-
-    await abrirImpressao(
-
-        `
-
-        <h1>
-            HOTEL DO BAÚ
-        </h1>
-
-
-        <h2>
-            NOVO PEDIDO
-        </h2>
-
-
-        <div class="separador"></div>
-
-
-        <p class="identificacao-print">
-
-            QUARTO:
-            ${escaparHTML(
-                pedido.quarto || "-"
-            )}
-
-        </p>
-
-
-        <p class="central">
-
-            ${escaparHTML(
-                pedido.dataHora || ""
-            )}
-
-        </p>
-
-
-        <div class="separador"></div>
-
-
-        ${itensHTML}
-
-
-        <div class="separador"></div>
-
-
-        <strong>
-            OBSERVAÇÕES:
-        </strong>
-
-
-        <p class="obs">
-
-            ${escaparHTML(
-                pedido.observacao ||
-                "Nenhuma"
-            )}
-
-        </p>
-
-
-        <div class="separador"></div>
-
-
-        <div class="total-impressao">
-
-            <span>
-                TOTAL
-            </span>
-
-            <span>
-                ${dinheiro(
-                    pedido.total
-                )}
-            </span>
-
-        </div>
-
-
-        <div class="separador"></div>
-
-
-        <p class="central">
-
-            Hotel do Baú
-
-            <br>
-
-            Obrigado!
-
-        </p>
-
-        `,
-
-        async function () {
-
-            try {
-
-                if (!automatico) {
-
-                    const confirmar =
-                        confirm(
-
-                            "A impressão do pedido do quarto " +
-
-                            (
-                                pedido.quarto ||
-                                "-"
-                            ) +
-
-                            " saiu corretamente?"
-
-                        );
-
-
-                    if (!confirmar) {
-                        return;
-                    }
-
-                }
-
-
-                await deleteDoc(
-
-                    doc(
-                        dbHospedes,
-                        "pedidos",
-                        pedido.id
-                    )
-
-                );
-
-            }
-
-            catch (erro) {
-
-                console.error(
-                    "Erro ao finalizar pedido:",
-                    erro
-                );
-
-                alert(
-                    "A impressão saiu, mas não foi possível retirar o pedido da tela."
-                );
-
-            }
-
-        }
-
-    );
-
-}
-
-
-// =====================================================
-// IMPRESSÃO - GARÇOM / PRODUÇÃO
-// SOMENTE 1 VIA
-// =====================================================
-
-async function imprimirGarcom(
-    pedido,
-    automatico = false
-) {
-
-    if (!pedido) {
-
-        alert(
-            "Pedido não encontrado."
-        );
-
-        return;
-
-    }
-
-
-    const itens =
-        Array.isArray(
-            pedido.itens
-        )
-            ? pedido.itens
-            : [];
-
-
-    let itensHTML = "";
-
-
-    itens.forEach(item => {
-
-        itensHTML += `
-
-            <div class="item-producao">
-
-                <strong>
-
-                    ${Number(
-                        item.quantidade || 0
-                    )}x
-
-                    ${escaparHTML(
-                        item.nome
-                    )}
-
-                </strong>
-
-            </div>
-
-        `;
-
-    });
-
-
-    // ==========================================
-    // IDENTIFICAÇÃO
-    // ==========================================
-
-    let identificacao = "";
-
-
-    if (
-        pedido.tipo === "quarto"
-    ) {
-
-        identificacao = `
-
-            <p class="identificacao-print">
-
-                QUARTO
-
-                ${escaparHTML(
-                    String(
-                        pedido.quarto || ""
-                    )
-                )}
-
-            </p>
-
-        `;
-
-    }
-
-    else {
-
-        identificacao = `
-
-            <p class="identificacao-print mesa-print">
-
-                MESA
-
-                ${String(
-                    pedido.mesa || ""
-                ).padStart(
-                    2,
-                    "0"
-                )}
-
-            </p>
-
-        `;
-
-    }
-
-
-    // ==========================================
-    // CONTEÚDO DA PRODUÇÃO
-    // ==========================================
-
-    const conteudo = `
-
-        <h1>
-            HOTEL DO BAÚ
-        </h1>
-
-
-        <h2>
-            PRODUÇÃO
-        </h2>
-
-
-        <div class="separador"></div>
-
-
-        ${identificacao}
-
-
-        <p class="central">
-
-            ${escaparHTML(
-                pedido.dataHora || ""
-            )}
-
-        </p>
-
-
-        <div class="separador"></div>
-
-
-        ${itensHTML}
-
-
-        <div class="separador"></div>
-
-
-        <strong>
-            OBSERVAÇÃO:
-        </strong>
-
-
-        <p class="obs">
-
-            ${escaparHTML(
-                pedido.observacao ||
-                "Nenhuma"
-            )}
-
-        </p>
-
-    `;
-
-
-    try {
-
-        // ==========================================
-        // UMA ÚNICA VIA
-        // ==========================================
-
-        await abrirImpressao(
-            conteudo,
-            async function () {}
-        );
-
-
-        // ==========================================
-        // CONFIRMAÇÃO MANUAL
-        // ==========================================
-
-        if (!automatico) {
-
-            const confirmar =
-                confirm(
-                    "A via da produção foi enviada para impressão?"
-                );
-
-
-            if (!confirmar) {
-
-                return;
-
-            }
-
-        }
-
-
-        // ==========================================
-        // REMOVE DA FILA DE PRODUÇÃO
-        // ==========================================
-
-        await deleteDoc(
-
-            doc(
-                dbGarcom,
-                "pedidos_producao",
-                pedido.id
-            )
-
-        );
-
-    }
-
-    catch (erro) {
-
-        console.error(
-            "Erro ao imprimir a produção:",
-            erro
-        );
-
-        alert(
-            "⚠️ Não foi possível concluir a impressão da produção."
-        );
-
-        throw erro;
-
-    }
-
-}
-
-
-// =====================================================
-// IMPRESSÃO - CONSUMO ATUAL
-// MESA / QUARTO
-// =====================================================
-
-async function imprimirConsumoMesa(
-    pedido,
-    automatico = false
-) {
-
-    if (!pedido) {
-        return;
-    }
-
-    try {
-
-        const tipo =
-            pedido.tipo || "mesa";
-
-        const numero =
-            pedido.numero ||
-            pedido.mesa ||
-            pedido.quarto;
-
-        if (!numero) {
-
-            throw new Error(
-                "O pedido não possui número de mesa ou quarto."
-            );
-
-        }
-
-        // ==========================================
-        // IDENTIFICADOR DA MESA / QUARTO
-        // ==========================================
-
-        const idMesa =
-            tipo === "quarto"
-
-                ? "quarto_" +
-                  String(numero).padStart(
-                      2,
-                      "0"
-                  )
-
-                : "mesa_" +
-                  String(numero).padStart(
-                      2,
-                      "0"
-                  );
-
-        console.log(
-            "Buscando consumo acumulado:",
-            idMesa
-        );
-
-        // ==========================================
-        // BUSCA TODOS OS PEDIDOS ACUMULADOS
-        // ==========================================
-
-        const referenciaPedidos =
-            collection(
-                dbGarcom,
-                "mesas",
-                idMesa,
-                "pedidos"
-            );
-
-        const snapshot =
-            await getDocs(
-                referenciaPedidos
-            );
-
-        if (
-            snapshot.empty
-        ) {
-
-            throw new Error(
-                "Nenhum pedido acumulado foi encontrado em " +
-                "mesas/" +
-                idMesa +
-                "/pedidos"
-            );
-
-        }
-
-        const itensAcumulados = {};
-
-        let total = 0;
-
-        // ==========================================
-        // ACUMULA TODOS OS PEDIDOS
-        // ==========================================
-
-        snapshot.forEach(
-            documento => {
-
-                const pedidoMesa =
-                    documento.data();
-
-                const itens =
-                    Array.isArray(
-                        pedidoMesa.itens
-                    )
-                        ? pedidoMesa.itens
-                        : [];
-
-                itens.forEach(item => {
-
-                    const quantidade =
-                        Number(
-                            item.quantidade || 0
-                        );
-
-                    const preco =
-                        Number(
-                            item.preco || 0
-                        );
-
-                    total +=
-                        preco *
-                        quantidade;
-
-                    const chave =
-                        String(
-                            item.id ??
-                            item.nome
-                        );
-
-                    if (
-                        !itensAcumulados[chave]
-                    ) {
-
-                        itensAcumulados[chave] = {
-
-                            id:
-                                item.id,
-
-                            nome:
-                                item.nome,
-
-                            preco:
-                                preco,
-
-                            quantidade:
-                                0
-
-                        };
-
-                    }
-
-                    itensAcumulados[chave]
-                        .quantidade +=
-                        quantidade;
-
-                });
-
-            }
-        );
-
-        // ==========================================
-        // MONTA OS ITENS
-        // ==========================================
-
-        let itensHTML = "";
-
-        Object.values(
-            itensAcumulados
-        ).forEach(item => {
-
-            const subtotal =
-                item.preco *
-                item.quantidade;
-
-            itensHTML += `
-
-                <div class="linha-item-impressao">
-
-                    <span>
-
-                        ${item.quantidade}x
-                        ${escaparHTML(
-                            item.nome
-                        )}
-
-                    </span>
-
-                    <strong>
-
-                        ${dinheiro(
-                            subtotal
-                        )}
-
-                    </strong>
-
-                </div>
-
-            `;
-
-        });
-
-        // ==========================================
-        // IDENTIFICAÇÃO
-        // ==========================================
-
-        const identificacao =
-            tipo === "quarto"
-
-                ? "QUARTO " +
-                  String(numero)
-
-                : "MESA " +
-                  String(numero).padStart(
-                      2,
-                      "0"
-                  );
-
-        // ==========================================
-        // CONSUMO ATUAL
-        // ==========================================
-
-        const conteudo = `
-
-            <h1>
-                HOTEL DO BAÚ
-            </h1>
-
-            <h2>
-                CONSUMO ATUAL
-            </h2>
-
-            <div class="separador"></div>
-
-            <div class="identificacao-print">
-
-                ${identificacao}
-
-            </div>
-
-            <div class="separador"></div>
-
-            ${itensHTML}
-
-            <div class="separador"></div>
-
-            <div class="total-impressao">
-
-                <span>
-                    TOTAL
-                </span>
-
-                <strong>
-                    ${dinheiro(total)}
-                </strong>
-
-            </div>
-
-            <div class="separador"></div>
-
-            <p class="central">
-
-                CONTA PARCIAL
-
-                <br>
-
-                MESA PERMANECE ABERTA
-
-            </p>
-
-        `;
-
-        console.log(
-            "Imprimindo consumo:",
-            idMesa,
-            total
-        );
-
-        await abrirImpressao(
-            conteudo,
-            async function () {}
-        );
-
-        console.log(
-            "Consumo enviado para impressão:",
-            idMesa
-        );
-
-    }
-
-    catch (erro) {
-
-        console.error(
-            "ERRO AO IMPRIMIR CONSUMO:",
-            erro
-        );
-
-        alert(
-
-            "⚠️ NÃO FOI POSSÍVEL IMPRIMIR O CONSUMO.\n\n" +
-
-            (
-                erro.message ||
-                erro
-            )
-
-        );
-
-        throw erro;
 
     }
 
