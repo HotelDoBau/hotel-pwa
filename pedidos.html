@@ -969,11 +969,17 @@ async function imprimirFechamento(fechamento) {
     try {
         numeroComanda = await gerarNumeroComanda();
     } catch (erro) {
-        console.error("Erro ao gerar número da comanda:", erro);
-        alert("⚠️ Não foi possível gerar o número da comanda. O fechamento não será impresso.");
-        fechamentosEmAndamento.delete(fechamento.id);
-        return;
-    }
+    console.error("ERRO COMPLETO AO GERAR COMANDA:", erro);
+
+    alert(
+        "ERRO AO GERAR COMANDA\n\n" +
+        "Código: " + (erro.code || "desconhecido") + "\n\n" +
+        "Mensagem: " + (erro.message || erro)
+    );
+
+    fechamentosEmAndamento.delete(fechamento.id);
+    return;
+}
 
     // ==========================================
     // IMPRESSÃO
