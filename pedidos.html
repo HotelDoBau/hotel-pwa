@@ -159,7 +159,8 @@ import {
     doc,
     getDocs,
     setDoc,
-    serverTimestamp
+    serverTimestamp,
+    runTransaction
 } from
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -852,6 +853,17 @@ ${pedido.quarto
 
 }
 
+async function gerarNumeroComanda() {
+    const referenciaControle = doc(dbGarcom, "controle", "comanda");
+    return await runTransaction(dbGarcom, async (transacao) => {
+        const documento = await transacao.get(referenciaControle);
+        const ultimoNumero = Number(documento.exists() ? documento.data().ultimoNumero || 0 : 0);
+        const proximoNumero = ultimoNumero + 1;
+        transacao.set(referenciaControle, { ultimoNumero: proximoNumero, atualizadoEm: serverTimestamp() }, { merge: true });
+        return String(proximoNumero).padStart(6, "0");
+    });
+}
+
 async function imprimirFechamento(fechamento) {
 
     if (!fechamento?.id) return;
@@ -949,6 +961,21 @@ async function imprimirFechamento(fechamento) {
 
 
     // ==========================================
+    // NÚMERO AUTOMÁTICO DA COMANDA
+    // ==========================================
+
+    let numeroComanda;
+
+    try {
+        numeroComanda = await gerarNumeroComanda();
+    } catch (erro) {
+        console.error("Erro ao gerar número da comanda:", erro);
+        alert("⚠️ Não foi possível gerar o número da comanda. O fechamento não será impresso.");
+        fechamentosEmAndamento.delete(fechamento.id);
+        return;
+    }
+
+    // ==========================================
     // IMPRESSÃO
     // ==========================================
 
@@ -957,7 +984,21 @@ async function imprimirFechamento(fechamento) {
         `
         <h1>HOTEL DO BAÚ</h1>
 
-        <h2>FECHAMENTO</h2>
+        <h2>COMPROVANTE DE VENDA</h2>
+
+        <p class="central">
+            MAR BBC HOTELARIA E TURISMO LTDA
+        </p>
+
+        <p class="central">
+            Rua Nove de Julho, 177<br>
+            Centro - Santa Rosa de Viterbo/SP<br>
+            CNPJ: 59.143.158/0001-63
+        </p>
+
+        <div class="separador"></div>
+
+        <p class="central"><strong>COMANDA Nº ${numeroComanda}</strong></p>
 
         <div class="separador"></div>
 
@@ -1027,9 +1068,13 @@ async function imprimirFechamento(fechamento) {
 
 
         <p class="central">
-            Hotel do Baú
-            <br>
-            Obrigado!
+            Obrigado pela preferência!
+        </p>
+
+        <p class="central">
+            ESTE DOCUMENTO É UM<br>
+            COMPROVANTE DE VENDA.<br>
+            NÃO É DOCUMENTO FISCAL.
         </p>
         `,
 
