@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pedidos - Hotel do Baú</title>
 
-```
+
 <link rel="stylesheet" href="css/pedidos.css">
 
 <style>
@@ -111,7 +111,7 @@
         }
     }
 </style>
-```
+
 
 </head>
 
@@ -119,7 +119,7 @@
 
 <header class="topo">
 
-```
+
 <button onclick="history.back()" class="voltar">
     ← Voltar
 </button>
@@ -133,13 +133,13 @@
     </p>
 
 </div>
-```
+
 
 </header>
 
 <main class="container">
 
-```
+
 <div class="barra-pedidos">
 
     <span id="contador-pedidos">
@@ -203,7 +203,7 @@
     </div>
 
 </section>
-```
+
 
 </main>
 
@@ -2349,7 +2349,7 @@ ${conteudo}
 
 </html>
 
-```
+
 `);
 
 
@@ -2421,7 +2421,7 @@ finally {
     iframe.remove();
 
 }
-```
+
 
 }
 
@@ -2431,7 +2431,7 @@ finally {
 
 onSnapshot(
 
-```
+
 collection(
     dbHospedes,
     "pedidos"
@@ -2528,7 +2528,7 @@ erro => {
         "🔴 Hóspedes offline";
 
 }
-```
+
 
 );
 
@@ -2538,7 +2538,7 @@ erro => {
 
 onSnapshot(
 
-```
+
 collection(
     dbGarcom,
     "pedidos_producao"
@@ -2635,7 +2635,7 @@ erro => {
         "🔴 Garçons offline";
 
 }
-```
+
 
 );
 
@@ -2645,7 +2645,7 @@ erro => {
 
 onSnapshot(
 
-```
+
 collection(
     dbGarcom,
     "fechamentos"
@@ -2706,7 +2706,7 @@ erro => {
         "🔴 Fechamentos offline";
 
 }
-```
+
 
 );
 
@@ -2725,21 +2725,21 @@ ativarNotificacoes
 
 if (
 
-```
+
 "Notification" in window &&
 
 Notification.permission ===
     "granted"
-```
+
 
 ) {
 
-```
+
 document.getElementById(
     "btn-notificacao"
 ).textContent =
     "🔔 Notificações ativadas";
-```
+
 
 }
 
